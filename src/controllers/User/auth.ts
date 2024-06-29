@@ -1,4 +1,8 @@
 import { NextFunction, Request, Response } from "express";
+import dotenv from "dotenv";
+dotenv.config();
+
+const publicClientUrl = process.env.PUBLIC_CLIENT_URL as string;
 
 export const loginSuccess = async (
   req: Request,
@@ -39,6 +43,6 @@ export const logout = async (
     if (err) {
       return next(err);
     }
-    res.redirect("http://localhost:3000");
+    res.redirect(publicClientUrl);
   });
 };

@@ -12,7 +12,7 @@ export const isAuthenticated = async (
     const users = req.user as IUser;
     const userId = users._id;
     try {
-      // Check if the user exists in MongoDB
+      // Check if the user exists  in MongoDB
       const user = await User.findById(userId);
       if (user) {
         return next();

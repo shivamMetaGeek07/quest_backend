@@ -11,7 +11,7 @@ dotenv.config();
 const app: Express = express();
 app.use(express.urlencoded({ extended: true }));
 const port = process.env.PORT || 8050;
-
+console.log(process.env.PUBLIC_CLIENT_URL)
 // Middleware setup
 app.use(
   session({
@@ -23,7 +23,7 @@ app.use(
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.PUBLIC_CLIENT_URL,
     methods: ["GET", "POST"],
     credentials: true,
   })

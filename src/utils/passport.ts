@@ -19,7 +19,7 @@ passport.use(
     {
       clientID: process.env.CLIENT_ID!,
       clientSecret: process.env.SECRET_ID!,
-      callbackURL: "http://localhost:8080/auth/google/callback",
+      callbackURL: `${process.env.PUBLIC_SERVER_URL}/auth/google/callback`,
     },
     async (accessToken, refreshToken, profile: Profile, done) => {
       try {
@@ -56,7 +56,7 @@ passport.use(
     {
       consumerKey: process.env.Twitter_Key!,
       consumerSecret: process.env.Twitter_Secret_key!,
-      callbackURL: "http://localhost:8080/auth/twitter/callback",
+      callbackURL: `${process.env.PUBLIC_SERVER_URL}/auth/twitter/callback`,
       includeEmail: true,
       passReqToCallback: true, // Allows access to the request object in the callback
     } as IStrategyOptionWithRequest, // Type assertion
