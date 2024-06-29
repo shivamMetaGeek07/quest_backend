@@ -1,14 +1,18 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
+import {
+  Strategy as TwitterStrategy,
+  IStrategyOptionWithRequest,
+  Profile as TwitterProfile,
+} from "passport-twitter";
+
 import dotenv from "dotenv";
-import UserDb from "../models/user";
+import UserDb, { IUser } from "../models/user/user";
+import { Request } from "express";
 
 dotenv.config();
 
-const googleScopes = ["profile", "email"];
-
-console.log("GOOGLE_CLIENT_ID:", process.env.CLIENT_ID);
-console.log("GOOGLE_CLIENT_SECRET:", process.env.SECRET_ID);
+// Google Authentication
 
 passport.use(
   new GoogleStrategy(
@@ -45,6 +49,46 @@ GoogleStrategy.prototype.authorizationParams = function () {
     prompt: "consent",
   };
 };
+
+// Twitter OAuth configuration
+passport.use(
+  new TwitterStrategy(
+    {
+      consumerKey: process.env.Twitter_Key!,
+      consumerSecret: process.env.Twitter_Secret_key!,
+      callbackURL: "http://localhost:8080/auth/twitter/callback",
+      includeEmail: true,
+      passReqToCallback: true, // Allows access to the request object in the callback
+    } as IStrategyOptionWithRequest, // Type assertion
+    async (
+      req: Request,
+      token: string,
+      tokenSecret: string,
+      profile: TwitterProfile,
+      done: (error: any, user?: any) => void
+    ) => {
+      try {
+        if (!req.user) {
+          return done(new Error("User is not authenticated"), null);
+        }
+        const users = req.user as IUser;
+        let user = await UserDb.findById(users._id);
+        if (user) {
+          user.twitterInfo = {
+            twitterId: profile.id,
+            username: profile.username,
+            profileImageUrl: profile.photos?.[0].value,
+          };
+          await user.save();
+        }
+        return done(null, user);
+      } catch (error: any) {
+        return done(error);
+      }
+    }
+  )
+);
+
 passport.serializeUser((user: any, done) => {
   done(null, user);
 });

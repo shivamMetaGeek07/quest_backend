@@ -1,11 +1,20 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 
+// Define an interface for the TwitterInfo schema
+interface ITwitterInfo {
+  twitterId?: string;
+  username?: string;
+  profileImageUrl?: string;
+  // Add more fields as needed
+}
+
 // Define an interface for the User schema
 export interface IUser extends Document {
   googleId: string;
   displayName: string;
   email: string;
   image: string;
+  twitterInfo?: ITwitterInfo; // Optional TwitterInfo field
 }
 
 // Create the User schema
@@ -15,6 +24,11 @@ const userSchema: Schema = new mongoose.Schema(
     displayName: { type: String, required: true },
     email: { type: String, required: true },
     image: { type: String, required: true },
+    twitterInfo: {
+      twitterId: { type: String },
+      username: { type: String },
+      profileImageUrl: { type: String },
+    },
   },
   { timestamps: true }
 );

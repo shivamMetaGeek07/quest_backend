@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import User, { IUser } from "../models/user"; // Import your User model
+import User, { IUser } from "../../models/user/user"; // Import your User model
 
-export const isAuthenticated = async (
+export const TwitterConnected = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -14,14 +14,25 @@ export const isAuthenticated = async (
     try {
       // Check if the user exists in MongoDB
       const user = await User.findById(userId);
-      if (user) {
-        return next();
-      } else {
+      if (!user) {
         // User not found in database (possibly deleted or invalid)
         return res.status(401).json({
           error: "Unauthorized",
           message: "User not found or invalid",
         });
+      }
+
+      // Check if the user has connected their Twitter account
+      if (user.twitterInfo && user.twitterInfo.twitterId) {
+        // User has connected their Twitter account, permit the request
+
+        return res.status(401).json({
+          error: "Unauthorized",
+          message: "Already access",
+        });
+      } else {
+        // if it not connected then pass to the next
+        return next();
       }
     } catch (error) {
       console.error("Error checking user:", error);
