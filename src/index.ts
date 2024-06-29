@@ -14,7 +14,15 @@ const feedRouter = require("./routes/feed.route");
 const app: Express = express();
 const port = process.env.PORT || 8080;
 
-app.use( cors() );
+app.use(
+  cors({
+    origin: process.env.PUBLIC_CLIENT_URL,
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
+
+// app.use( cors() );
 
 app.use( "/feed", feedRouter );
 
@@ -23,10 +31,10 @@ app.get( "/", ( req: Request, res: Response ) =>
   res.send( "Express + TypeScript server" );
 } );
 
-if (!process.env.MONGO_URL) {
+if (!process.env.DB_URL) {
   throw new Error('MONGODB_URI is not defined in the environment variables');
 }
-const mongoUri: string = process.env.MONGO_URL!;
+// const mongoUri: string = process.env.MONGO_URL!;
 
 app.use(express.json());
 
@@ -49,13 +57,6 @@ app.use(
   })
 );
 
-app.use(
-  cors({
-    origin: process.env.PUBLIC_CLIENT_URL,
-    methods: ["GET", "POST"],
-    credentials: true,
-  })
-);
 
 app.use(passport.initialize());
 app.use(passport.session());

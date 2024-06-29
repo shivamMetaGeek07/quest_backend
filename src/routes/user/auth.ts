@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
+
 import passport from "../../utils/passport";
 import { loginFailed, loginSuccess, logout } from "../../controllers/user/auth";
 import { isAuthenticated } from "../../middleware/user/authorize.user";
