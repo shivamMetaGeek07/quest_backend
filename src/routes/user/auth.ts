@@ -42,7 +42,7 @@ authrouter.get("/login/success", loginSuccess);
 
 authrouter.get("/login/failed", loginFailed);
 
-authrouter.get("/profile", (req, res) => {
+authrouter.get("/profile",isAuthenticated,  (req, res) => {
   res.json({ user: req.user });
 });
 

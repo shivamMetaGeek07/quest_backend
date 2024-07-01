@@ -1,4 +1,5 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
+import { IKolsData } from "../kols/kols";
 
 // Define an interface for the TwitterInfo schema
 interface ITwitterInfo {
@@ -8,13 +9,16 @@ interface ITwitterInfo {
   // Add more fields as needed
 }
 
+
+
 // Define an interface for the User schema
 export interface IUser extends Document {
   googleId: string;
   displayName: string;
   email: string;
   image: string;
-  twitterInfo?: ITwitterInfo; // Optional TwitterInfo field
+  twitterInfo?: ITwitterInfo;
+  kolsData?: IKolsData[]; // Optional TwitterInfo field
 }
 
 // Create the User schema
@@ -29,6 +33,7 @@ const userSchema: Schema = new mongoose.Schema(
       username: { type: String },
       profileImageUrl: { type: String },
     },
+    kolsData: [{ type: Schema.Types.ObjectId, ref: "KolsData" }],
   },
   { timestamps: true }
 );

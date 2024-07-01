@@ -1,4 +1,6 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
+import KolsDB from '../../models/kols/kols';
+import UserDb, { IUser } from '../../models/user/user';
 
 interface KolsData {
   name: string;
@@ -179,13 +181,81 @@ const KolsData: KolsData[] = [
   },
 ];
 
-export const getAllKols = (req: Request, res: Response): void => {
-  res.send({status:200,data:KolsData});
+export const createKols = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user =await req.body
+    console.log("Request Body:", user);
+    // Check if `kolsData` exists in request body
+    if (!req.body.kolsData) {
+      return res.status(400).json({ error: "Bad Request", message: "No KolsData provided" });
+    }
+
+    const { name, userName, role, bio, imageUrl, upVotes, downVotes, socialLinks } = req.body.kolsData;
+
+    if (!name || !userName || !role) {
+      return res.status(400).json({ error: "Bad Request", message: "Missing required KolsData fields" });
+    }
+
+    // Check if a KolsData document with the same name, userName, and role already exists
+    const existingKolsData = await KolsDB.findOne({
+      name: name,
+      userName: userName,
+      role: role,
+    });
+
+    if (existingKolsData) {
+      return res.status(409).json({
+        error: "Conflict",
+        message: "KolsData with the same name, userName, and role already exists",
+      });
+    }
+
+    // Create and save the new KolsData document
+    const newKolsData = new KolsDB({
+      name,
+      userName,
+      role,
+      bio,
+      imageUrl,
+      upVotes,
+      downVotes,
+      socialLinks,
+    });
+
+    await newKolsData.save();
+    console.log("KolsData saved:", newKolsData);
+
+    // Respond with the newly created KolsData document
+    return res.status(200).json({
+      success: true,
+      message: "KolsData added successfully",
+      kolsData: newKolsData,
+    });
+  } catch (error) {
+    console.error("Error in createKols:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
-export const getKolById = (req: Request, res: Response): void => {
-  const { id } = req.params;
-  res.send(`Get KOL with ID: ${id}`);
+
+export const getAllKol = async (req: Request, res: Response) => {
+  try {
+    // Fetch all KolsData documents from the database
+    const kols = await KolsDB.find();
+
+    // Respond with the fetched data
+    return res.status(200).json({
+      success: true,
+      message: 'Fetched all KolsData documents successfully',
+      kols,
+    });
+  } catch (error) {
+    console.error('Error fetching KolsData:', error);
+    return res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Error fetching KolsData',
+    });
+  }
 };
 
 export const createKol = (req: Request, res: Response): void => {

@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
+import bodyParser from 'body-parser';
 import session from "express-session";
 import cors from "cors";
 import authrouter from "./routes/user/auth";
@@ -11,8 +12,12 @@ dotenv.config();
 
 const app: Express = express();
 app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true }));
+
 const port = process.env.PORT || 8050;
 console.log(process.env.PUBLIC_CLIENT_URL)
+
 // Middleware setup
 app.use(
   session({
