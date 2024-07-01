@@ -5,6 +5,7 @@ import passport from "../../utils/passport";
 import { loginFailed, loginSuccess, logout } from "../../controllers/user/auth";
 import { isAuthenticated } from "../../middleware/user/authorize.user";
 import { TwitterConnected } from "../../middleware/user/twitter";
+import { DiscordConnected } from "../../middleware/user/discord";
 dotenv.config();
 
 const authrouter = express.Router();
@@ -38,6 +39,25 @@ authrouter.get(
     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
      })
 );
+
+// Connect Discord account  of user and check it is authenticate or not
+authrouter.get(
+  "/discord",
+  isAuthenticated,
+  DiscordConnected,
+  passport.authenticate("discord")
+);
+
+authrouter.get(
+  "/discord/callback",
+  passport.authenticate("discord", {
+    successRedirect: process.env.PUBLIC_CLIENT_URL,
+    failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
+     })
+);
+
+
+
 
 authrouter.get("/login/success", loginSuccess);
 

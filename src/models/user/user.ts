@@ -6,10 +6,13 @@ interface ITwitterInfo {
   twitterId?: string;
   username?: string;
   profileImageUrl?: string;
-  // Add more fields as needed
 }
 
-
+interface IDiscordInfo {
+  discordId?: string;
+  username?: string;
+  profileImageUrl?: string;
+}
 
 // Define an interface for the User schema
 export interface IUser extends Document {
@@ -17,11 +20,14 @@ export interface IUser extends Document {
   displayName: string;
   email: string;
   image: string;
+  rank:string;
   twitterInfo?: ITwitterInfo;
-  kolsData?: IKolsData[]; // Optional TwitterInfo field
+  discordInfo?: IDiscordInfo;
+  kolsData?: IKolsData[];
 }
 
 // Create the User schema
+
 const userSchema: Schema = new mongoose.Schema(
   {
     googleId: { type: String, required: true },
@@ -30,6 +36,11 @@ const userSchema: Schema = new mongoose.Schema(
     image: { type: String, required: true },
     twitterInfo: {
       twitterId: { type: String },
+      username: { type: String },
+      profileImageUrl: { type: String },
+    },
+    discordInfo: {
+      discordId: { type: String },
       username: { type: String },
       profileImageUrl: { type: String },
     },
