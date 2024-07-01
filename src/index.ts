@@ -7,16 +7,24 @@ import authrouter from "./routes/user/auth";
 import passport from "./utils/passport";
 import connectDB from "./utils/db";
 import kolsRouter from './routes/kols/kols';
-
+import feedRouter from "./routes/feed.route"
 dotenv.config();
-
 const app: Express = express();
+app.use(express.json());
+
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.json());  
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const port = process.env.PORT || 8050;
-console.log(process.env.PUBLIC_CLIENT_URL)
+
+app.use(
+  cors({
+    origin: process.env.PUBLIC_CLIENT_URL,
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
 
 // Middleware setup
 app.use(
@@ -27,13 +35,7 @@ app.use(
   })
 );
 
-app.use(
-  cors({
-    origin: process.env.PUBLIC_CLIENT_URL,
-    methods: ["GET", "POST"],
-    credentials: true,
-  })
-);
+app.use( "/feed", feedRouter);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -41,15 +43,16 @@ app.use(passport.session());
 app.use("/auth", authrouter);
 app.use('/kols', kolsRouter);
 
-// Example routes
-app.get("/", (req: Request, res: Response) => {
-  res.send("Express + TypeScript server");
-});
 
+// Example route
+app.get('/', (req: Request, res: Response) => {
+  res.send('Express + TypeScript server');
+});
 app.get("/greet", (req: Request, res: Response) => {
   res.send("Express + TypeScript server says Hello");
-  console.log("this is", process.env.SECRET_ID);
-});
+} );
+
+ 
 // Start server
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
