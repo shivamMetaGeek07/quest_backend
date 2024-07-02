@@ -2,13 +2,15 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 import { Quest } from "../quests/quest.model";
 
 // Define an interface for the TwitterInfo schema
-interface ITwitterInfo {
+export interface ITwitterInfo {
   twitterId?: string;
   username?: string;
   profileImageUrl?: string;
+  oauthToken?: string;
+  oauthTokenSecret?: string;
 }
 
-interface IDiscordInfo {
+export interface IDiscordInfo {
   discordId?: string;
   username?: string;
   profileImageUrl?: string;
@@ -19,32 +21,35 @@ export interface IUser extends Document {
   googleId: string;
   displayName: string;
   email: string;
+  role: string;
   image: string;
-  rank:string;
-  quest:Quest[];
+  rank: string;
+  quest: Quest[];
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
 }
 
 // Create the User schema
-
 const userSchema: Schema = new mongoose.Schema(
   {
     googleId: { type: String, required: true },
     displayName: { type: String, required: true },
     email: { type: String, required: true },
-    image: { type: String, required: true },  
+    image: { type: String, required: true },
+    role: { type: String, default: 'user' },
     twitterInfo: {
       twitterId: { type: String },
       username: { type: String },
       profileImageUrl: { type: String },
+      oauthToken: { type: String },
+      oauthTokenSecret: { type: String },
     },
     discordInfo: {
       discordId: { type: String },
       username: { type: String },
       profileImageUrl: { type: String },
     },
-    Quest: [{ type: Schema.Types.ObjectId, ref: "Quest" }],
+    quest: [{ type: Schema.Types.ObjectId, ref: "Quest" }],
   },
   { timestamps: true }
 );

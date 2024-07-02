@@ -1,41 +1,38 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { Community } from '../community/community.model';
+import { IDiscordInfo, ITwitterInfo } from '../user/user';
 
 // Define the interface based on the provided structure
 export interface IKolsData extends Document {
-  name: string;
-  userName: string;
-  role: string;
-  bio: string;
-  imageUrl: string;
+  googleId: string;
+  displayName: string;
+  email: string;
+  image: string;
   upVotes: number;
   downVotes: number;
   community:Community[]
-  socialLinks: {
-    linkedin: string;
-    youtube: string;
-    facebook: string;
-    instagram: string;
-    twitter: string;
-  };
+  twitterInfo?: ITwitterInfo;
+  discordInfo?: IDiscordInfo;
 }
 
 // Define the schema
 const KolsDataSchema: Schema = new Schema({
-  name: { type: String, required: true },
-  userName: { type: String, required: true },
-  role: { type: String, required: true },
-  bio: { type: String, required: true },
-  imageUrl: { type: String, required: true },
-  upVotes: { type: Number, required: true },
-  downVotes: { type: Number, required: true },
+  googleId: { type: String, required: true },
+  displayName: { type: String, required: true },
+  email: { type: String, required: true },
+  image: { type: String, required: true },  
+  upVotes: { type: Number },
+  downVotes: { type: Number },
   community: [{ type: Schema.Types.ObjectId, ref: "Community" }],
-  socialLinks: {
-    linkedin: { type: String, required: true },
-    youtube: { type: String, required: true },
-    facebook: { type: String, required: true },
-    instagram: { type: String, required: true },
-    twitter: { type: String, required: true },
+  twitterInfo: {
+    twitterId: { type: String },
+    username: { type: String },
+    profileImageUrl: { type: String },
+  },
+  discordInfo: {
+    discordId: { type: String },
+    username: { type: String },
+    profileImageUrl: { type: String },
   },
 }, {
   timestamps: true // Add timestamps if you want to automatically manage `createdAt` and `updatedAt`
