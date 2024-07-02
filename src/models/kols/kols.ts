@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { Community } from '../community/community.model';
 
 // Define the interface based on the provided structure
 export interface IKolsData extends Document {
@@ -9,6 +10,7 @@ export interface IKolsData extends Document {
   imageUrl: string;
   upVotes: number;
   downVotes: number;
+  community:Community[]
   socialLinks: {
     linkedin: string;
     youtube: string;
@@ -27,6 +29,7 @@ const KolsDataSchema: Schema = new Schema({
   imageUrl: { type: String, required: true },
   upVotes: { type: Number, required: true },
   downVotes: { type: Number, required: true },
+  community: [{ type: Schema.Types.ObjectId, ref: "Community" }],
   socialLinks: {
     linkedin: { type: String, required: true },
     youtube: { type: String, required: true },

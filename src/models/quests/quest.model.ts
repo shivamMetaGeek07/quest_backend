@@ -19,7 +19,7 @@ interface Reward {
   value: number;
 }
 
-interface Quest {
+export interface Quest {
   id: string;
   title: string;
   description: string;

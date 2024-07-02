@@ -1,5 +1,5 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
-import { IKolsData } from "../kols/kols";
+import { Quest } from "../quests/quest.model";
 
 // Define an interface for the TwitterInfo schema
 interface ITwitterInfo {
@@ -21,9 +21,9 @@ export interface IUser extends Document {
   email: string;
   image: string;
   rank:string;
+  quest:Quest[];
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
-  kolsData?: IKolsData[];
 }
 
 // Create the User schema
@@ -44,7 +44,7 @@ const userSchema: Schema = new mongoose.Schema(
       username: { type: String },
       profileImageUrl: { type: String },
     },
-    kolsData: [{ type: Schema.Types.ObjectId, ref: "KolsData" }],
+    Quest: [{ type: Schema.Types.ObjectId, ref: "Quest" }],
   },
   { timestamps: true }
 );

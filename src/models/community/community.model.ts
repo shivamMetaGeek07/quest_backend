@@ -1,6 +1,6 @@
 import mongoose, { Model, Schema } from "mongoose";
 
-interface Community
+export interface Community
 {
     _id: string;
     title: string;
