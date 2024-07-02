@@ -1,10 +1,11 @@
 import express from 'express';
-import { getAllKols, getKolById, createKol } from '../../controllers/kols/kols';
+import {   createKols, getAllKol } from '../../controllers/kols/kols';
+import { isAuthenticated } from '../../middleware/user/authorize.user';
 
 const kolsRouter = express.Router();
 
-kolsRouter.get('/getAllKols', getAllKols);
-kolsRouter.get('/:id', getKolById);
-kolsRouter.post('/create', createKol);
+kolsRouter.get('/get',isAuthenticated, getAllKol);
+kolsRouter.post('/create',createKols);
+
 
 export default kolsRouter;
