@@ -8,6 +8,8 @@ import passport from "./utils/passport";
 import connectDB from "./utils/db";
 import kolsRouter from './routes/kols/kols';
 import feedRouter from "./routes/feed.route"
+import questsRouter from "./routes/quests/quests.route";
+import communityRoute from "./routes/community/community.route";
 dotenv.config();
 const app: Express = express();
 app.use(express.json());
@@ -16,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());  
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const port = process.env.PORT || 8050;
+const port = process.env.PORT || 8080;
 
 app.use(
   cors({
@@ -35,7 +37,10 @@ app.use(
   })
 );
 
-app.use( "/feed", feedRouter);
+app.use( '/feed', feedRouter );
+
+app.use( "/quest", questsRouter );
+app.use('/community', communityRoute);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -46,11 +51,13 @@ app.use('/kols', kolsRouter);
 
 // Example route
 app.get('/', (req: Request, res: Response) => {
+  
   res.send('Express + TypeScript server');
 });
 app.get("/greet", (req: Request, res: Response) => {
   res.send("Express + TypeScript server says Hello");
 } );
+
 
  
 // Start server
