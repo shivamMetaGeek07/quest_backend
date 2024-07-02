@@ -1,23 +1,10 @@
-import express, {  Request, Response } from "express";
-const fs = require("fs");
-import dotenv from "dotenv";
-import path from "path";
+import { Router } from 'express';
+import { addFeed, getFeeds, getFeedById } from '../controllers/feeds/feed';
 
-dotenv.config();
+const router = Router();
 
-const feedRouter = express.Router();
+router.post('/feeds', addFeed);
+router.get('/feeds', getFeeds);
+router.get('/feeds/:id', getFeedById);
 
-feedRouter.use(express.json());
-
-feedRouter.get("/", (req: Request, res: Response) => {
-  try {
-    const data = JSON.parse(fs.readFileSync(path.join("./db.json"), "utf8"));
-    // console.log(data);
-    res.json(data);
-  } catch (error) {
-    console.error("Error reading feed data:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-module.exports = feedRouter;
+export default router;

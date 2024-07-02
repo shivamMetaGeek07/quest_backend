@@ -22,9 +22,9 @@ app.use(
   })
 );
 
-// app.use( cors() );
+app.use( cors() );
 
-app.use( "/feed", feedRouter );
+// app.use( "/feed", feedRouter );
 
 app.get( "/", ( req: Request, res: Response ) =>
 {
