@@ -10,9 +10,10 @@ import kolsRouter from './routes/kols/kols';
 import feedRouter from "./routes/feed.route"
 import questsRouter from "./routes/quests/quests.route";
 import communityRoute from "./routes/community/community.route";
+import Bottleneck from "bottleneck";
 dotenv.config();
 const app: Express = express();
-app.use(express.json());
+app.use( express.json() );
 
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());  
@@ -58,10 +59,11 @@ app.get("/greet", (req: Request, res: Response) => {
   res.send("Express + TypeScript server says Hello");
 } );
 
-
  
 // Start server
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
   connectDB();
 });
+
+

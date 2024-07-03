@@ -17,7 +17,7 @@ const CommunitySchema: Schema = new mongoose.Schema<Community>( {
     title: { type: String, required: true },
     description: { type: String },
     count_of_members: { type: Number, required: true, default: 0 },
-    logo: { type: String, required: true },
+    logo: { type: String,  },
     ecosystem: [ { type: String, required: true } ],
     category: [ { type: String, required: true } ],
     quests: [ { type: Schema.Types.ObjectId, ref: 'Quest' } ],

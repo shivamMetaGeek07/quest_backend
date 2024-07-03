@@ -7,8 +7,13 @@ export const questController = {
     // create a quest
     createQuest: async ( req: Request, res: Response ) =>
     {
+        console.log( req.body );
+
         try
         {
+            // const newQuest = new QuestModel( req.body );
+            // const savedQuest = await newQuest.save();
+            // res.status( 201 ).json( savedQuest );
             const newQuest: Quest = await QuestModel.create( req.body );
             res.status( 201 ).json( { newQuest: newQuest, msg: "New Quest Created successful" } );
         } catch (error) {

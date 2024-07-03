@@ -20,7 +20,7 @@ interface Reward {
 }
 
 export interface Quest {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   type: QuestType;
@@ -29,7 +29,7 @@ export interface Quest {
 }
 
 const QuestSchema: Schema = new mongoose.Schema<Quest>({
-  id: { type: String, required: true, unique: true },
+ 
   title: { type: String, required: true },
   description: { type: String, required: true },
   type: {
