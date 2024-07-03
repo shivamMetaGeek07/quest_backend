@@ -5,7 +5,7 @@ import {
   IStrategyOptionWithRequest,
   Profile as TwitterProfile,
 } from "passport-twitter";
-
+import { Strategy as DiscordStrategy, Profile as DiscordProfile } from "passport-discord";
 import dotenv from "dotenv";
 import UserDb, { IUser } from "../models/user/user";
 import { Request } from "express";
@@ -46,7 +46,7 @@ passport.use(
 GoogleStrategy.prototype.authorizationParams = function () {
   return {
     access_type: "offline",
-    prompt: "consent",
+    // prompt: "consent",
   };
 };
 
@@ -58,7 +58,7 @@ passport.use(
       consumerSecret: process.env.Twitter_Secret_key!,
       callbackURL: `${process.env.PUBLIC_SERVER_URL}/auth/twitter/callback`,
       includeEmail: true,
-      passReqToCallback: true, // Allows access to the request object in the callback
+      passReqToCallback: true, 
     } as IStrategyOptionWithRequest, // Type assertion
     async (
       req: Request,
@@ -84,6 +84,44 @@ passport.use(
         return done(null, user);
       } catch (error: any) {
         return done(error);
+      }
+    }
+  )
+);
+
+// Discord OAUth Authentication
+
+const scopes = ['identify', 'email', 'guilds', 'guilds.join'];
+
+passport.use(
+  new DiscordStrategy(
+    {
+      clientID: process.env.Discord_ID!,
+      clientSecret: process.env.DISCORD_SECRET_KEY!,
+      callbackURL: `${process.env.PUBLIC_SERVER_URL}/auth/discord/callback`,
+      scope: scopes,
+      passReqToCallback: true,
+    },
+    async (req: Request, accessToken: string, refreshToken: string, profile: DiscordProfile, done: any) => {
+      try {
+        console.log("req.user:", req.user);
+        if (!req.user) {
+          return done(new Error("User is not authenticated"), null);
+        }
+        const users = req.user as IUser;
+        console.log("users:", users);
+        const user = await UserDb.findById(users._id);
+        if (user) {
+          user.discordInfo = {
+            discordId: profile.id,
+            username: profile.username,
+            profileImageUrl: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : undefined,
+          };
+          await user.save();
+        }
+        return done(null, user);
+      } catch (error: any) {
+        return done(error, null);
       }
     }
   )

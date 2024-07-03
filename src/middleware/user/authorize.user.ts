@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import User, { IUser } from "../../models/user/user"; // Import your User model
+import  UserDb, { IUser } from "../../models/user/user";  
 
 export const isAuthenticated = async (
   req: Request,
@@ -13,7 +13,7 @@ export const isAuthenticated = async (
     const userId = users._id;
     try {
       // Check if the user exists  in MongoDB
-      const user = await User.findById(userId);
+      const user = await UserDb.findById(userId);
       if (user) {
         return next();
       } else {
