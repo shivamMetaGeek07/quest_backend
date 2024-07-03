@@ -2,13 +2,14 @@ import { Request, Response } from 'express';
 import Feed from '../../models/feed/feed';
 
 export const addFeed = async (req: Request, res: Response) => {
-    const { title, description, imageUrl } = req.body;
+    console.log(req.body);
+    const { title, author, imageUrl, summary,description } = req.body;
     try {
         if (!title || !description || !imageUrl) {
             return res.status(400).json({ error: 'Title, description, and imageUrl are required' });
         }
 
-        const newFeed = new Feed({ title, description, imageUrl });
+        const newFeed = new Feed({ title, description, imageUrl, author, summary});
         const savedFeed = await newFeed.save();
 
         res.status(201).json({ success: true, feed: savedFeed });
