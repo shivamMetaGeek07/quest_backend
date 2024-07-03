@@ -1,4 +1,3 @@
-
 import mongoose from 'mongoose';
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
@@ -8,6 +7,7 @@ import authrouter from "./routes/user/auth";
 import passport from "./utils/passport";
 import connectDB from "./utils/db";
 import kolsRouter from './routes/kols/kols';
+import adminRoutes from './routes/admin/admin';
 
 dotenv.config();
 const feedRouter = require("./routes/feed.route");
@@ -63,6 +63,7 @@ app.use(passport.session());
 // Google auth route
 app.use("/auth", authrouter);
 app.use('/kols', kolsRouter);
+app.use('/admin', adminRoutes);
 
 // Example routes
 app.get("/", (req: Request, res: Response) => {
@@ -73,6 +74,8 @@ app.get("/greet", (req: Request, res: Response) => {
   res.send("Express + TypeScript server says Hello");
   console.log("this is", process.env.SECRET_ID);
 });
+
+
 // Start server
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
