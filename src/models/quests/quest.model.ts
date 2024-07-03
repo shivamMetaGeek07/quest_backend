@@ -40,7 +40,7 @@ const QuestSchema: Schema = new mongoose.Schema<Quest>({
   status: {
     type: String,
     enum: Object.values(QuestStatus),
-    required: true
+    required: true  
   },
   rewards: [{
     type: { type: String, required: true },
@@ -48,7 +48,7 @@ const QuestSchema: Schema = new mongoose.Schema<Quest>({
   }]
 }, {
   timestamps: true
-});
+}); 
 
 const QuestModel: Model<Quest> = mongoose.model<Quest>("Quest", QuestSchema);
 

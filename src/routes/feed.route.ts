@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { addFeed, getFeeds, getFeedById } from '../controllers/feeds/feed';
 
-const router = Router();
+const feedRouter = Router();
 
-router.post('/feeds', addFeed);
-router.get('/feeds', getFeeds);
-router.get('/feeds/:id', getFeedById);
+feedRouter.post('/', addFeed);
+feedRouter.get('/', getFeeds);
+feedRouter.get('/:id', getFeedById);
 
-export default router;
+export default feedRouter;
