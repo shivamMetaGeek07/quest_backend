@@ -11,6 +11,8 @@ import feedRouter from "./routes/feed.route"
 import questsRouter from "./routes/quests/quests.route";
 import communityRoute from "./routes/community/community.route";
 import Bottleneck from "bottleneck";
+import adminRoutes from './routes/admin/admin';
+
 dotenv.config();
 const app: Express = express();
 app.use( express.json() );
@@ -48,6 +50,7 @@ app.use(passport.session());
 // Google auth route
 app.use("/auth", authrouter);
 app.use('/kols', kolsRouter);
+app.use('/admin', adminRoutes);
 
 
 // Example route
@@ -64,6 +67,5 @@ app.get("/greet", (req: Request, res: Response) => {
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
   connectDB();
-});
 
-
+} );

@@ -48,7 +48,7 @@ const QuestSchema: Schema = new mongoose.Schema<Quest>({
   }]
 }, {
   timestamps: true
-});
+}); 
 
 const QuestModel: Model<Quest> = mongoose.model<Quest>("Quest", QuestSchema);
 
