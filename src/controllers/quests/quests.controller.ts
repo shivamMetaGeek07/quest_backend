@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import QuestModel, { Quest } from "../../models/quests/quest.model";
+import CommunityModel from "../../models/community/community.model";
 
 
 export const questController = {
@@ -7,14 +8,28 @@ export const questController = {
     // create a quest
     createQuest: async ( req: Request, res: Response ) =>
     {
-        console.log( req.body );
+        // console.log( req.body );
 
         try
         {
-            // const newQuest = new QuestModel( req.body );
-            // const savedQuest = await newQuest.save();
-            // res.status( 201 ).json( savedQuest );
+            const {communityId} =  req.body
+             
             const newQuest: Quest = await QuestModel.create( req.body );
+            // verify the currenet exists
+         
+            const currentCumminty = await CommunityModel.findById( communityId );
+            let quest = currentCumminty?.quests
+            // console.log( "currentCumminty :- ", currentCumminty?.quests );
+            if ( currentCumminty )
+            {
+                quest?.push( newQuest._id );
+                 await currentCumminty.save();
+            } else
+            {
+                res.status( 400 ).json( { message: "Community not found" } );
+            }
+            // console.log( "updatedCumminty :- ", currentCumminty?.quests );
+
             res.status( 201 ).json( { newQuest: newQuest, msg: "New Quest Created successful" } );
         } catch (error) {
             res.status( 500 ).json( { msg: "Error creating quest", error: error } );
@@ -24,7 +39,6 @@ export const questController = {
     //  get all quests
     getAllQuests: async ( req: Request, res: Response ) =>
     {
-        console.log("Hello world")
         try
         {
 
