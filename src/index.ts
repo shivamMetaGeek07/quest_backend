@@ -9,6 +9,7 @@ import connectDB from "./utils/db";
 import kolsRouter from './routes/kols/kols';
 import adminRoutes from './routes/admin/admin';
 import feedRouter from "./routes/feed.route";
+import s3routes from "./routes/s3routes";
 
 dotenv.config();
 const app: Express = express();
@@ -45,7 +46,7 @@ app.use(passport.session());
 app.use("/auth", authrouter);
 app.use('/kols', kolsRouter);
 app.use('/admin', adminRoutes);
-
+app.use('/aws',s3routes);
 
 // Example route
 app.get('/', (req: Request, res: Response) => {
