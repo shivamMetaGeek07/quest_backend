@@ -14,8 +14,11 @@ export interface IDiscordInfo {
   discordId?: string;
   username?: string;
   profileImageUrl?: string;
+  accessToken: string;
+  refreshToken: string;
+  guilds?: string[];
 }
-
+ 
 // Define an interface for the User schema
 export interface IUser extends Document {
   googleId: string;
@@ -37,6 +40,8 @@ const userSchema: Schema = new mongoose.Schema(
     email: { type: String, required: true },
     image: { type: String, required: true },
     role: { type: String, default: 'user' },
+    rank: { type: String, default: 'beginner' },
+    quest: [{ type: Schema.Types.ObjectId, ref: "Quest" }],
     twitterInfo: {
       twitterId: { type: String },
       username: { type: String },
@@ -48,8 +53,10 @@ const userSchema: Schema = new mongoose.Schema(
       discordId: { type: String },
       username: { type: String },
       profileImageUrl: { type: String },
+      accessToken: { type: String },
+      refreshToken: { type: String },
+      guilds: { type: [String] },
     },
-    quest: [{ type: Schema.Types.ObjectId, ref: "Quest" }],
   },
   { timestamps: true }
 );

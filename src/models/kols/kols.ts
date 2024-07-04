@@ -3,6 +3,7 @@ import { Community } from '../community/community.model';
 import { IDiscordInfo, ITwitterInfo } from '../user/user';
 
 // Define the interface based on the provided structure
+
 export interface IKolsData extends Document {
   googleId: string;
   displayName: string;
@@ -14,6 +15,7 @@ export interface IKolsData extends Document {
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
 }
+
 
 // Define the schema
 const KolsDataSchema: Schema = new Schema({
@@ -35,7 +37,7 @@ const KolsDataSchema: Schema = new Schema({
     profileImageUrl: { type: String },
   },
 }, {
-  timestamps: true // Add timestamps if you want to automatically manage `createdAt` and `updatedAt`
+  timestamps: true   
 });
 
 // Create the model

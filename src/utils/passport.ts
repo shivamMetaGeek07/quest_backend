@@ -10,6 +10,7 @@ import dotenv from "dotenv";
 import UserDb, { IUser } from "../models/user/user";
 import { Request } from "express";
 import KolsDB from "../models/kols/kols";
+import { fetchGuilds } from "../controllers/user/discord";
 
 dotenv.config();
 
@@ -69,11 +70,12 @@ passport.use(
 GoogleStrategy.prototype.authorizationParams = function () {
   return {
     access_type: "offline",
-    prompt: "consent",
+    // prompt: "consent",
   };
 };
 
 // Twitter OAuth configuration
+
 passport.use(
   new TwitterStrategy(
     {
@@ -146,10 +148,10 @@ const scopes = ['identify', 'email', 'guilds', 'guilds.join'];
 passport.use(
   new DiscordStrategy(
     {
-      clientID: process.env.Discord_ID!,
+      clientID: process.env.DISCORD_ID!,
       clientSecret: process.env.DISCORD_SECRET_KEY!,
       callbackURL: `${process.env.PUBLIC_SERVER_URL}/auth/discord/callback`,
-      scope: scopes,
+      scope: ['identify', 'email', 'guilds', 'guilds.join'],
       passReqToCallback: true,
     },
     async (req: Request, accessToken: string, refreshToken: string, profile: DiscordProfile, done: any) => {
@@ -161,14 +163,20 @@ passport.use(
         const users = req.user as IUser;
         let user;
 
+        // Fetch user guilds
+        
         // Check user role and update the appropriate database model
         if (users.role === 'user') {
           user = await UserDb.findById(users._id);
+          const guilds = await fetchGuilds(accessToken);
           if (user) {
             user.discordInfo = {
               discordId: profile.id,
               username: profile.username,
               profileImageUrl: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : undefined,
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+              guilds: guilds.length > 0 ? guilds : undefined,
             };
             await user.save();
           } else {
@@ -176,11 +184,15 @@ passport.use(
           }
         } else if (users.role === 'kol') {
           user = await KolsDB.findById(users._id);
+          const guilds = await fetchGuilds(accessToken);
           if (user) {
             user.discordInfo = {
               discordId: profile.id,
               username: profile.username,
               profileImageUrl: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : undefined,
+              accessToken: accessToken,
+              refreshToken: refreshToken,
+              guilds: guilds.length > 0 ? guilds : undefined,
             };
             await user.save();
           } else {
@@ -197,6 +209,7 @@ passport.use(
     }
   )
 );
+;
 
 
 passport.serializeUser((user: any, done) => {
