@@ -35,12 +35,12 @@ const QuestSchema: Schema = new mongoose.Schema<Quest>({
   type: {
     type: String,
     enum: Object.values(QuestType),
-    required: true
+    // required: true
   },
   status: {
     type: String,
     enum: Object.values(QuestStatus),
-    required: true
+    // required: true
   },
   rewards: [{
     type: { type: String, required: true },
