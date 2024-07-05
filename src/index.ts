@@ -8,15 +8,21 @@ import passport from "./utils/passport";
 import connectDB from "./utils/db";
 import kolsRouter from './routes/kols/kols';
 import feedRouter from "./routes/feed.route"
+import questsRouter from "./routes/quests/quests.route";
+import communityRoute from "./routes/community/community.route";
+import Bottleneck from "bottleneck";
+import adminRoutes from './routes/admin/admin';
+import s3routes from "./routes/s3routes";
+
 dotenv.config();
 const app: Express = express();
-app.use(express.json());
+app.use( express.json() );
 
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());  
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const port = process.env.PORT || 8050;
+const port = process.env.PORT || 8080;
 
 app.use(
   cors({
@@ -35,17 +41,22 @@ app.use(
   })
 );
 
-app.use( "/feed", feedRouter);
+app.use( '/feed', feedRouter );
+
+app.use( "/quest", questsRouter );
+app.use('/community', communityRoute);
 
 app.use(passport.initialize());
 app.use(passport.session());
 // Google auth route
 app.use("/auth", authrouter);
 app.use('/kols', kolsRouter);
-
+app.use('/admin', adminRoutes);
+app.use('/aws',s3routes);
 
 // Example route
 app.get('/', (req: Request, res: Response) => {
+  
   res.send('Express + TypeScript server');
 });
 app.get("/greet", (req: Request, res: Response) => {
@@ -57,4 +68,5 @@ app.get("/greet", (req: Request, res: Response) => {
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
   connectDB();
-});
+
+} );

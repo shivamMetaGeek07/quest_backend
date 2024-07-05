@@ -20,7 +20,7 @@ interface Reward {
 }
 
 export interface Quest {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   type: QuestType;
@@ -29,18 +29,18 @@ export interface Quest {
 }
 
 const QuestSchema: Schema = new mongoose.Schema<Quest>({
-  id: { type: String, required: true, unique: true },
+ 
   title: { type: String, required: true },
   description: { type: String, required: true },
   type: {
     type: String,
     enum: Object.values(QuestType),
-    required: true
+    // required: true
   },
   status: {
     type: String,
     enum: Object.values(QuestStatus),
-    required: true
+    // required: true
   },
   rewards: [{
     type: { type: String, required: true },
@@ -48,7 +48,7 @@ const QuestSchema: Schema = new mongoose.Schema<Quest>({
   }]
 }, {
   timestamps: true
-});
+}); 
 
 const QuestModel: Model<Quest> = mongoose.model<Quest>("Quest", QuestSchema);
 
