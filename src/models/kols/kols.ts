@@ -26,15 +26,21 @@ const KolsDataSchema: Schema = new Schema({
   upVotes: { type: Number },
   downVotes: { type: Number },
   community: [{ type: Schema.Types.ObjectId, ref: "Community" }],
+  quest: [{ type: Schema.Types.ObjectId, ref: "Quest" }],
   twitterInfo: {
     twitterId: { type: String },
     username: { type: String },
     profileImageUrl: { type: String },
+    oauthToken: { type: String },
+    oauthTokenSecret: { type: String },
   },
   discordInfo: {
     discordId: { type: String },
     username: { type: String },
     profileImageUrl: { type: String },
+    accessToken: { type: String },
+    refreshToken: { type: String },
+    guilds: { type: [String] },
   },
 }, {
   timestamps: true   
@@ -44,3 +50,7 @@ const KolsDataSchema: Schema = new Schema({
 const KolsDB = mongoose.model<IKolsData>('KolsData', KolsDataSchema);
 
 export default KolsDB;
+
+
+
+

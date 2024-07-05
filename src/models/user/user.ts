@@ -57,7 +57,7 @@ const userSchema: Schema = new mongoose.Schema(
       refreshToken: { type: String },
       guilds: { type: [String] },
     },
-  },
+  }, 
   { timestamps: true }
 );
 

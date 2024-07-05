@@ -91,7 +91,8 @@ authrouter.get("/login/success", loginSuccess);
 authrouter.get("/login/failed", loginFailed);
 
 authrouter.get("/profile",isAuthenticated,  (req, res) => {
-  res.json({ user: req.user });
+  const user=req.user;
+  res.json({  user});
 });
 
 authrouter.get("/logout",isAuthenticated, logout);
@@ -171,6 +172,8 @@ authrouter.post('/message/channel', async (req: Request, res: Response) => {
     return res.status(500).send('Failed to fetch guilds');
   }
 });
+
+ 
 authrouter.get('/validate/:inviteUrl', async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).send('User is not authenticated');
