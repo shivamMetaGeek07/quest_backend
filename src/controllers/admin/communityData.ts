@@ -16,13 +16,12 @@ export const getCommunityData = async (req: Request, res: Response) => {
 
 export const createCommunityData = async (req: Request, res: Response) => {
   console.log("create community",req.body);
-    const {categories, ecosystems, description } = req.body;
+    const {categories, ecosystems } = req.body;
   
     try {
       const newCommunity = new CommunityData({
         categories,
         ecosystems,
-        description
       });
   
       await newCommunity.save();

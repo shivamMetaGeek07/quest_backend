@@ -1,5 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
+import KolsDB from "../../models/kols/kols";
+import Twitter from "twitter-lite";
+import UserDb from "../../models/user/user";
 dotenv.config();
 
 const publicClientUrl = process.env.PUBLIC_CLIENT_URL as string;
@@ -34,15 +37,72 @@ export const loginFailed = async (
   });
 };
 
-export const logout = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  req.logout(function (err) {
+// Logout user
+
+
+export const logout = (req: Request, res: Response) => {
+  req.logout((err) => {
     if (err) {
-      return next(err);
+      return res.status(500).json({ message: "Error logging out" });
     }
-    res.redirect(publicClientUrl);
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid'); 
+      res.redirect(`${process.env.PUBLIC_CLIENT_URL}/user/login`);  
+    });
   });
+};
+// consumer_key: process.env.Twitter_Key!,
+//       consumer_secret: process.env.Twitter_Secret_key!,
+//       access_token_key: user.twitterInfo.oauthToken,
+//       access_token_secret: user.twitterInfo.oauthTokenSecret,
+// check in X is Account follw or not
+
+export const checkIfUserFollows = async (req: Request, res: Response) => {
+  try {
+    if (!req.isAuthenticated() || !req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const loggedInUser = req.user as any;  // Adjust the type according to your user model
+    const { targetUserId } = req.params;
+
+    if (!targetUserId) {
+      return res.status(400).json({ message: 'Missing target user ID' });
+    }
+
+    // Retrieve Twitter tokens from the logged-in user's profile
+    const user = await UserDb.findById(loggedInUser._id);
+    if (!user || !user.twitterInfo) {
+      return res.status(400).json({ message: 'Twitter account not connected' });
+    }
+
+    const client = new Twitter({
+        consumer_key: process.env.Twitter_Key!,
+        consumer_secret: process.env.Twitter_Secret_key!,
+        access_token_key: user.twitterInfo.oauthToken,
+        access_token_secret: user.twitterInfo.oauthTokenSecret,
+    });
+
+    // Check if the user follows a specific account
+    const response = await client.get('friendships/show', {
+      source_id: user.twitterInfo.twitterId, // Use Twitter ID for the source user
+      target_id: targetUserId,  // Target user ID
+    });
+
+    if (response.relationship.source.following) {
+      // User is following the target account
+      return res.json({ message: 'User follows the account' });
+    } else {
+      // User is not following the target account
+      return res.json({ message: 'User does not follow the account' });
+    }
+  } catch (error: any) {
+    console.error('Error checking if user follows:', error);
+    if (error.errors && error.errors[0] && error.errors[0].code === 453) {
+      return res.status(403).json({
+        error: 'Access to this endpoint is restricted. Please check your Twitter API access level.',
+      });
+    }
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
 };
