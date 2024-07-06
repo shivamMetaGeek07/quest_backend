@@ -26,6 +26,7 @@ export interface Quest {
   type: QuestType;
   status: QuestStatus;
   rewards: Reward[];
+  tasks?: string[];
 }
 
 const QuestSchema: Schema = new mongoose.Schema<Quest>({
@@ -42,6 +43,7 @@ const QuestSchema: Schema = new mongoose.Schema<Quest>({
     enum: Object.values(QuestStatus),
     // required: true
   },
+  tasks: [],
   rewards: [{
     type: { type: String, required: true },
     value: { type: Number, required: true }

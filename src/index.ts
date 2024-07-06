@@ -13,6 +13,7 @@ import communityRoute from "./routes/community/community.route";
 import Bottleneck from "bottleneck";
 import adminRoutes from './routes/admin/admin';
 import s3routes from "./routes/s3routes";
+import taskRouter from "./routes/task/task.route";
 
 dotenv.config();
 const app: Express = express();
@@ -44,7 +45,9 @@ app.use(
 app.use( '/feed', feedRouter );
 
 app.use( "/quest", questsRouter );
-app.use('/community', communityRoute);
+app.use( '/community', communityRoute );
+
+app.use('/task', taskRouter)
 
 app.use(passport.initialize());
 app.use(passport.session());
