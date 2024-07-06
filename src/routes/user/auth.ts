@@ -5,8 +5,9 @@ import { checkIfUserFollows, loginFailed, loginSuccess, logout } from "../../con
 import { isAuthenticated } from "../../middleware/user/authorize.user";
 import { TwitterConnected } from "../../middleware/user/twitter";
 import { checkGuilds, checkInviteLink, fetchGuildChannelInfo, sendNotification } from "../../controllers/user/discord";
-import { IUser } from "../../models/user/user";
+import UserDb, { IUser } from "../../models/user/user";
 import { DiscordConnected } from "../../middleware/user/discord";
+import KolsDB from "../../models/kols/kols";
 dotenv.config();
 
 const authrouter = express.Router();
@@ -35,7 +36,7 @@ authrouter.get(
   }
 );
 
-// Google OAuth callback route
+// Google OAuth callback route 
 
 authrouter.get(
   '/google/callback',
@@ -43,7 +44,7 @@ authrouter.get(
     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
   }),
   (req, res) => { 
-    res.redirect(`${process.env.PUBLIC_CLIENT_URL}/kols-profile`);
+    res.redirect(`${process.env.PUBLIC_CLIENT_URL}/`);
   }
 );
  
@@ -60,7 +61,7 @@ authrouter.get(
 authrouter.get(
   "/twitter/callback",
   passport.authenticate("twitter", {
-    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/kols-profile`,
+    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/`,
     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
      })
 );
@@ -77,7 +78,7 @@ authrouter.get(
 authrouter.get(
   "/discord/callback",
   passport.authenticate("discord", {
-    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/kols-profile`,
+    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/`,
     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
      })
 );
@@ -90,15 +91,29 @@ authrouter.get("/login/success", loginSuccess);
 
 authrouter.get("/login/failed", loginFailed);
 
-authrouter.get("/profile",isAuthenticated,  (req, res) => {
-  const user=req.user;
-  res.json({  user});
+authrouter.get("/profile", isAuthenticated, async (req, res) => {
+  const user = req.user as any;
+  console.log("User from req:", user); // Add debug statement
+  
+  let data;
+  if (user.role === 'kol') {
+    data = await KolsDB.findById(user._id);
+  } else {
+    data = await UserDb.findById(user._id);
+  }
+  console.log("Data from DB:", data); // Add debug statement
+
+  if (!data) {
+    return res.status(401).json({ message: "User not found. Please login" });
+  }
+  return res.status(200).send(data);
 });
+
 
 authrouter.get("/logout",isAuthenticated, logout);
 
 
-// fetch guiild channel 
+// fetch guiild channel  
 
 authrouter.get('/fetch-guild/:guildId', async (req: Request, res: Response) => {
   if (!req.user) {
