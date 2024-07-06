@@ -43,3 +43,54 @@ export const getFeedById = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Unable to retrieve feed', details: error.message });
     }
 };
+
+// delete the feed
+export const deleteFeed = async ( req: Request, res: Response ) =>
+{
+    const { id } = req.params;
+    try
+    {
+        const feed = await Feed.findByIdAndDelete( id );
+        if ( feed )
+        {
+            res.status( 200 ).json( { success: true, feed } );
+        } else
+        {
+            res.status( 404 ).json( { success: false, error: 'Feed not found' } );
+        }
+        
+    } catch ( error: any )
+    {
+        console.error( error );
+        res.status( 500 ).json( { error: 'Unable to delete feed', details: error.message } );
+    }
+};
+
+// update the feed
+export const updateFeed = async ( req: Request, res: Response ) =>
+{
+    const { id } = req.params;
+    const { title, description, imageUrl, author, summary } = req.body;
+    try
+    {
+        const feed = await Feed.findByIdAndUpdate( id, { title, description,  imageUrl
+            , author, summary
+        }, { new: true } );
+        if ( feed )
+        {
+            res.status( 200 ).json( { success: true, feed } );
+        } else
+        {
+            res.status( 404 ).json( { success: false, error: 'Feed not found'
+            } );
+        }
+    } catch ( error: any )
+    {
+        console.error( error );
+        res.status( 500 ).json( { error: 'Unable to update feed', details: error.message } );
+    }
+};
+
+
+    
+    
