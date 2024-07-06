@@ -8,16 +8,15 @@ export const isAuthenticated = async (
   next: NextFunction
 ) => {
   if (req.isAuthenticated()) {
-
+    
     // If user is authenticated via Passport.js
-
+    
     const users = req.user as IUser;
     const userId = users._id;
     const role = users.role; 
-
     try {
 
-      // Check if the user exists in the corresponding MongoDB collection based on the role
+      // Check if the user exists in  the corresponding MongoDB collection based on the role
 
       let user;
       if (role === 'user') {
