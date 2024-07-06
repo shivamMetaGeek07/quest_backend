@@ -4,7 +4,9 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 interface ITaskBase extends Document {
   _id: string;
   category: 'Actions' | 'Answers' | 'Social' | 'On-chain action';
-  creator: string;
+  creator: string; // he is kol
+  type: String;
+  questId: String; // in which quest task is being created
 }
 
 // Interface for visit
