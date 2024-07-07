@@ -1,6 +1,5 @@
 import express from "express";
 import { taskController } from "../../controllers/task/task.controller";
-import createReferral from "../../controllers/task/referral";
 import { createTaskOptions, getTaskOptions, updateTaskOptions } from "../../controllers/task/taskOption.controller";
 
 
@@ -33,6 +32,5 @@ taskRouter.post( "/", taskController.addTask );
 // // create a invite
 // taskRouter.post( '/invite', taskController.createInvite )
 
-taskRouter.get( '/get-referral', createReferral);
 
 export default taskRouter;
