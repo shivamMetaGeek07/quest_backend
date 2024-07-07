@@ -47,7 +47,7 @@ export const logout = (req: Request, res: Response) => {
     }
     req.session.destroy(() => {
       res.clearCookie('connect.sid'); 
-      res.redirect(`${process.env.PUBLIC_CLIENT_URL}/user/login`);  
+      res.redirect(`${process.env.PUBLIC_CLIENT_URL}/login`);  
     });
   });
 };
