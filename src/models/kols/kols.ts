@@ -9,6 +9,7 @@ export interface IKolsData extends Document {
   displayName: string;
   email: string;
   image: string;
+  role:string;
   upVotes: number;
   downVotes: number;
   community:Community[]
@@ -23,6 +24,7 @@ const KolsDataSchema: Schema = new Schema({
   displayName: { type: String, required: true },
   email: { type: String, required: true },
   image: { type: String, required: true },  
+  role: { type: String, default: 'kol' },
   upVotes: { type: Number },
   downVotes: { type: Number },
   community: [{ type: Schema.Types.ObjectId, ref: "Community" }],

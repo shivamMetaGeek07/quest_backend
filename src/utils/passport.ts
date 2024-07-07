@@ -29,10 +29,9 @@ passport.use(
         const role = req.query.state as string;  
         
         let user;
-
+        
         if (role === 'kol') {
           user = await KolsDB.findOne({ googleId: profile.id });
-
           if (!user) {
             user = new KolsDB({
               googleId: profile.id,
@@ -218,7 +217,7 @@ passport.serializeUser((user: any, done) => {
 
 passport.deserializeUser(async (id: string, done) => {
   try {
-    const user = await UserDb.findById(id);
+    let user = await UserDb.findById(id) || await KolsDB.findById(id);
     done(null, user);
   } catch (error) {
     done(error, null);

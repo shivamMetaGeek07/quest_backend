@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import QuestModel, { Quest } from "../../models/quests/quest.model";
+import QuestModel, { Quest } from "../../models/quest/quest.model";
 import CommunityModel from "../../models/community/community.model";
 
 
