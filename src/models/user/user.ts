@@ -1,5 +1,5 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
-import { Quest } from "../quests/quest.model";
+import { Quest } from "../quest/quest.model";
 
 // Define an interface for the TwitterInfo schema
 export interface ITwitterInfo {
