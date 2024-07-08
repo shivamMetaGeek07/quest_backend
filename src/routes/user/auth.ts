@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import passport from "../../utils/passport";
-import { checkIfUserFollows, loginFailed, loginSuccess, logout } from "../../controllers/user/auth";
+import { checkIfUserFollows, loginFailed, loginSuccess, logout, updateUser } from "../../controllers/user/auth";
 import { isAuthenticated } from "../../middleware/user/authorize.user";
 import { TwitterConnected } from "../../middleware/user/twitter";
 import { checkGuilds, checkInviteLink, fetchGuildChannelInfo, sendNotification } from "../../controllers/user/discord";
@@ -44,7 +44,7 @@ authrouter.get(
     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
   }),
   (req, res) => { 
-    res.redirect(`${process.env.PUBLIC_CLIENT_URL}/`);
+    res.redirect(`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`);
   }
 );
  
@@ -61,7 +61,7 @@ authrouter.get(
 authrouter.get(
   "/twitter/callback",
   passport.authenticate("twitter", {
-    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/`,
+    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`,
     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
      })
 );
@@ -78,12 +78,12 @@ authrouter.get(
 authrouter.get(
   "/discord/callback",
   passport.authenticate("discord", {
-    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/`,
+    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`,
     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
      })
 );
 
-
+// Get the Specific user info
 
 authrouter.get("/twitter/follows/:targetUserId", isAuthenticated, checkIfUserFollows);
 
@@ -91,9 +91,10 @@ authrouter.get("/login/success", loginSuccess);
 
 authrouter.get("/login/failed", loginFailed);
 
+// Get User And Kol info
+
 authrouter.get("/profile", isAuthenticated, async (req, res) => {
   const user = req.user as any;
-  console.log("User from req:", user); // Add debug statement
   
   let data;
   if (user.role === 'kol') {
@@ -101,7 +102,6 @@ authrouter.get("/profile", isAuthenticated, async (req, res) => {
   } else {
     data = await UserDb.findById(user._id);
   }
-  console.log("Data from DB:", data); // Add debug statement
 
   if (!data) {
     return res.status(401).json({ message: "User not found. Please login" });
@@ -109,11 +109,15 @@ authrouter.get("/profile", isAuthenticated, async (req, res) => {
   return res.status(200).send(data);
 });
 
+// update profile user and Kol
 
+authrouter.put("/profile/update",isAuthenticated, updateUser );
+
+// logout client
 authrouter.get("/logout",isAuthenticated, logout);
 
 
-// fetch guiild channel  
+// fetch guiild channel  (DISORD)
 
 authrouter.get('/fetch-guild/:guildId', async (req: Request, res: Response) => {
   if (!req.user) {
@@ -143,6 +147,7 @@ authrouter.get('/fetch-guild/:guildId', async (req: Request, res: Response) => {
     return res.status(500).send('Failed to fetch guilds');
   }
 });
+// Check Guild in user  (DISORD)
 
 authrouter.get('/check-guilds', async (req: Request, res: Response) => {
   if (!req.user) {
@@ -168,6 +173,8 @@ authrouter.get('/check-guilds', async (req: Request, res: Response) => {
   }
 });
 
+// send Message to  User after joining the channel  (DISORD)
+
 authrouter.post('/message/channel', async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).send('User is not authenticated');
@@ -187,6 +194,8 @@ authrouter.post('/message/channel', async (req: Request, res: Response) => {
     return res.status(500).send('Failed to fetch guilds');
   }
 });
+
+// Check Invited url is valid or not   (DISORD)
 
  
 authrouter.get('/validate/:inviteUrl', async (req: Request, res: Response) => {
