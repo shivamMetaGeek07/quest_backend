@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import KolsDB from "../../models/kols/kols";
 import Twitter from "twitter-lite";
-import UserDb from "../../models/user/user";
+import UserDb, { IUser } from "../../models/user/user";
 dotenv.config();
 
 const publicClientUrl = process.env.PUBLIC_CLIENT_URL as string;
@@ -45,9 +45,12 @@ export const logout = (req: Request, res: Response) => {
     if (err) {
       return res.status(500).json({ message: "Error logging out" });
     }
-    req.session.destroy(() => {
-      res.clearCookie('connect.sid'); 
-      res.redirect(`${process.env.PUBLIC_CLIENT_URL}/user/login`);  
+    req.session.destroy((sessionErr) => {
+      if (sessionErr) {
+        return res.status(500).json({ message: "Error destroying session" });
+      }
+      res.clearCookie('connect.sid');
+      return res.status(200).json({ message: "Logged out successfully" });
     });
   });
 };
@@ -104,5 +107,53 @@ export const checkIfUserFollows = async (req: Request, res: Response) => {
       });
     }
     return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  const users = req.user as IUser;
+  const role = users.role;
+  const { bgImage, bio, nickname, image } = req.body;  // Extract the fields from the request body
+  try {
+    let user;
+
+    // Check the role and find the appropriate user document
+    if (role === 'user') {
+      user = await UserDb.findById(users._id);  // Find the user from UserDb
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Update user fields
+      user.bgImage = bgImage || user.bgImage;  // Update only if provided
+      user.bio = bio || user.bio;
+      user.nickname = nickname || user.nickname;
+      user.image = image || user.image;
+
+      await user.save();  // Save the updated user document
+      return res.status(200).json({ message: 'User updated successfully', user });
+      
+    } else if (role === 'kol') {
+      user = await KolsDB.findById(users._id);  // Find the kol from KolsDB
+      
+      if (!user) {
+        return res.status(404).json({ error: 'KOL not found' });
+      }
+
+      // Update kol fields
+      user.bgImage = bgImage || user.bgImage;  // Update only if provided
+      user.bio = bio || user.bio;
+      user.nickname = nickname || user.nickname;
+      user.image = image || user.image;
+
+      await user.save();  // Save the updated kol document
+      return res.status(200).json({ user });
+    } else {
+      return res.status(400).json({ error: 'Invalid role' });  // Handle invalid roles
+    }
+  } catch (error) {
+    console.error('Error updating user or KOL:', error);
+    return res.status(500).json({ error: 'An error occurred while updating user or KOL' });
   }
 };

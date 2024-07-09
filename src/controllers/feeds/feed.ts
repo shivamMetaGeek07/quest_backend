@@ -20,9 +20,19 @@ export const addFeed = async (req: Request, res: Response) => {
 };
 
 export const getFeeds = async (req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
     try {
-        const feeds = await Feed.find();
-        res.status(200).json({ success: true, feeds });
+        const feeds = await Feed.find()
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .exec();
+
+        const totalRecords = await Feed.countDocuments();
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        res.status(200).json({ feeds,totalPages });
     } catch (error:any) {
         console.error(error);
         res.status(500).json({ error: 'Unable to retrieve feeds', details: error.message });
@@ -43,10 +53,9 @@ export const getFeedById = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Unable to retrieve feed', details: error.message });
     }
 };
-
-// delete the feed
 export const deleteFeed = async ( req: Request, res: Response ) =>
 {
+    console.log(req);
     const { id } = req.params;
     try
     {
@@ -66,9 +75,9 @@ export const deleteFeed = async ( req: Request, res: Response ) =>
     }
 };
 
-// update the feed
 export const updateFeed = async ( req: Request, res: Response ) =>
 {
+    console.log(req);
     const { id } = req.params;
     const { title, description, imageUrl, author, summary } = req.body;
     try

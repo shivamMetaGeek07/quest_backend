@@ -25,6 +25,10 @@ export interface IUser extends Document {
   googleId: string;
   displayName: string;
   email: string;
+  bio:string;
+  nickname:string;
+  bgImage:string;
+  badjes?: string[];
   role: string;
   image: string;
   rank: string;
@@ -44,6 +48,10 @@ const userSchema: Schema = new mongoose.Schema(
     displayName: { type: String, required: true },
     email: { type: String, required: true },
     image: { type: String, required: true },
+    bio:  {type:String},
+    bgImage:{type:String},
+    nickname:  {type:String},
+    badges:{type:[String]},
     role: { type: String, default: 'user' },
     rank: { type: String, default: 'beginner' },
     quest: [ { type: Schema.Types.ObjectId, ref: "Quest" } ],
