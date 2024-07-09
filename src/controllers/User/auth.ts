@@ -114,7 +114,6 @@ export const updateUser = async (req: Request, res: Response) => {
   const users = req.user as IUser;
   const role = users.role;
   const { bgImage, bio, nickname, image } = req.body;  // Extract the fields from the request body
-  console.log(req.body)
   try {
     let user;
 
@@ -149,7 +148,7 @@ export const updateUser = async (req: Request, res: Response) => {
       user.image = image || user.image;
 
       await user.save();  // Save the updated kol document
-      return res.status(200).json({ message: 'KOL updated successfully', user });
+      return res.status(200).json({ user });
     } else {
       return res.status(400).json({ error: 'Invalid role' });  // Handle invalid roles
     }
