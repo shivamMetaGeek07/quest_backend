@@ -31,7 +31,50 @@ export const CommunityController = {
             res.status( 400 ).json( { message: 'failed to fetch the communities', error } );
         }
     },
-
+    getallFilter: async ( req: Request, res: Response ): Promise<void> =>
+        {
+            try
+            {
+                const communities: Community[] = await CommunityModel.find();
+                res.status( 200 ).json( {
+                    communities: communities,
+                    msg: "Fetched Communities successfully"
+                } );
+            } catch ( error )
+            {
+                res.status( 400 ).json( { message: 'failed to fetch the communities', error } );
+            }
+        },
+    
+    getFilterCommunity: async (req: Request, res: Response): Promise<void> => {
+        try {
+            const { search, ecosystem, category } = req.body;
+      
+            // Construct query object based on provided filters
+            const query: any = {};
+      
+            if (search) {
+              query.title = { $regex: search, $options: 'i' }; // Case-insensitive search
+            }
+      
+            if (ecosystem) {
+              query.ecosystem = { $in: Array.isArray(ecosystem) ? ecosystem : [ecosystem] };
+            }
+      
+            if (category) {
+              query.category = { $in: Array.isArray(category) ? category : [category] };
+            }
+      
+            console.log("query", query);
+            const communities: Community[] = await CommunityModel.find(query);
+            res.status(200).json(communities);
+          } catch (error) {
+              res.status(400).json({
+            message: 'Failed to fetch communities',
+            error,
+          });
+        }
+      },
     // Get a specific community by ID
     getCommunityById: async ( req: Request, res: Response ): Promise<void> =>
     {

@@ -10,6 +10,11 @@ communityRoute.post( '/', CommunityController.createCommunity );
 // get all commmunities
 communityRoute.get( '/', CommunityController.getAllCommunities );
 
+// Filter community
+communityRoute.post( '/get', CommunityController.getFilterCommunity );
+
+communityRoute.get( '/get', CommunityController.getallFilter );
+
 // get a specific communiyt by id
 communityRoute.get( '/:id', CommunityController.getCommunityById );
 
