@@ -47,35 +47,35 @@ export const CommunityController = {
             }
         },
     
-    getFilterCommunity: async (req: Request, res: Response): Promise<void> => {
-        try {
-            const { search, ecosystem, category } = req.body;
-      
-            // Construct query object based on provided filters
-            const query: any = {};
-      
-            if (search) {
-              query.title = { $regex: search, $options: 'i' }; // Case-insensitive search
-            }
-      
-            if (ecosystem) {
-              query.ecosystem = { $in: Array.isArray(ecosystem) ? ecosystem : [ecosystem] };
-            }
-      
-            if (category) {
-              query.category = { $in: Array.isArray(category) ? category : [category] };
-            }
-      
-            console.log("query", query);
-            const communities: Community[] = await CommunityModel.find(query);
-            res.status(200).json(communities);
-          } catch (error) {
+        getFilterCommunity: async (req: Request, res: Response): Promise<void> => {
+            try {
+                
+                const { search, ecosystem, category } = req.body;
+
+                // Construct query object based on provided filters
+                const query: any = {};
+          
+                if (search && search.trim()) {
+                  query.title = { $regex: search, $options: 'i' }; // Case-insensitive search
+                }
+          
+                if (ecosystem && ecosystem.length > 0 && ecosystem[0].trim()) {
+                  query.ecosystem = { $in: Array.isArray(ecosystem) ? ecosystem : [ecosystem] };
+                }
+          
+                if (category && category.length > 0 && category[0].trim()) {
+                  query.category = { $in: Array.isArray(category) ? category : [category] };
+                }
+          
+                const communities: Community[] = await CommunityModel.find(query);
+                res.status(200).json(communities);
+              } catch (error) {
               res.status(400).json({
-            message: 'Failed to fetch communities',
-            error,
-          });
-        }
-      },
+                message: 'Failed to fetch communities',
+                error,
+              });
+            }
+          },
     // Get a specific community by ID
     getCommunityById: async ( req: Request, res: Response ): Promise<void> =>
     {
