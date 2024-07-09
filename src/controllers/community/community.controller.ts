@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import CommunityModel, { Community } from '../../models/community/community.model';
+import UserDb from '../../models/user/user';
 
 export const CommunityController = {
 
@@ -47,6 +48,29 @@ export const CommunityController = {
             } );
         }
     },
+
+    getCommunitiesByIds: async (req: Request, res: Response): Promise<void> => {
+    try {
+        const communityIds = req.body.communityIds;
+        
+        if (!Array.isArray(communityIds)) {
+            res.status(400).json({ message: 'Invalid input: communityIds must be an array' });
+            return;
+        }
+
+        const communities = await CommunityModel.find({ _id: { $in: communityIds } });
+        
+        res.status(200).json({
+            message: "Communities fetched successfully",
+            communities
+        });
+    } catch (error) {
+        console.error('Error in getCommunitiesByIds:', error);
+        res.status(500).json({
+            message: 'Internal server error while fetching communities'
+        });
+    }
+},
     
     // update a community
     updateCommunity: async ( req: Request, res: Response ): Promise<void> =>
@@ -162,6 +186,7 @@ export const CommunityController = {
                 { $addToSet: { members: memberId } },
                 { new: true, runValidators: true }
             );
+
             console.log( updatedCommunity );
             if ( !updatedCommunity )
             {
@@ -169,10 +194,24 @@ export const CommunityController = {
                 return;
             }
 
-            res.status( 200 ).json( {
-                message: "Member added to community successfully",
-                updatedCommunity
-            } );
+           // Update the user's communities array
+        const updatedUser = await UserDb.findByIdAndUpdate(
+            memberId,
+            { $addToSet: { community: communityId } },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+
+        res.status(200).json({
+            message: "Member added to community successfully",
+            updatedCommunity,
+            updatedUser
+        });
+
         } catch ( error )
         {
             console.error( 'Error in joinCommunity:', error );
@@ -193,6 +232,7 @@ export const CommunityController = {
             return;
         }
 
+        // Remove member from community
         const updatedCommunity = await CommunityModel.findOneAndUpdate(
             { _id: communityId, members: memberId },
             { $pull: { members: memberId } },
@@ -204,9 +244,22 @@ export const CommunityController = {
             return;
         }
 
+        // Remove community from user's communities array
+        const updatedUser = await UserDb.findByIdAndUpdate(
+            memberId,
+            { $pull: { communities: communityId } },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+
         res.status(200).json({ 
-            message: 'Member removed successfully', 
-            updatedCommunity 
+            message: 'Member removed successfully from community and community removed from user', 
+            updatedCommunity,
+            updatedUser
         });
     } catch (error) {
         console.error('Error in leaveCommunity:', error);
@@ -214,8 +267,7 @@ export const CommunityController = {
             message: 'Internal server error while leaving community'
         });
     }
-}
-    
+    }
     
     
 }

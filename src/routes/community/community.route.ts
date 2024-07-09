@@ -13,6 +13,9 @@ communityRoute.get( '/', CommunityController.getAllCommunities );
 // get a specific communiyt by id
 communityRoute.get( '/:id', CommunityController.getCommunityById );
 
+// get communities by ids
+communityRoute.post('/getByIds', CommunityController.getCommunitiesByIds);
+
 // update the community
 communityRoute.put( '/:id', CommunityController.updateCommunity );
 

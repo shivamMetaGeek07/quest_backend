@@ -31,7 +31,7 @@ export const questController = {
     } catch (error) {
         res.status(500).json({ msg: "Error creating quest", error: error });
     }
-};
+},
 
 
     //  get all quests
