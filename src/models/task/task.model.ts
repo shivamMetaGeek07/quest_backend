@@ -1,68 +1,72 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
-// Common interface for both Task and Poll
+// Base interface for all task types
 interface ITaskBase extends Document {
-  _id: string;
   category: 'Actions' | 'Answers' | 'Social' | 'On-chain action';
-  creator: string; // he is kol
-  type: String;
-  questId: String; // in which quest task is being created
-}
+  // type: 'visit' | 'poll' | 'quiz' | 'invite' | 'upload';
+  type: string;
+  questId: mongoose.Types.ObjectId;
+  creator: mongoose.Types.ObjectId;
+  completions: Array<{
+    user: mongoose.Types.ObjectId;
+    completedAt: Date;
+    submission?: string;
+  }>;
+} 
 
-// Interface for visit
-export interface IVisite extends ITaskBase {
-  visitLink: string;
-}
 
-// Interface for Poll
-export interface IPoll extends ITaskBase {
-  question: string;
-  options: string[];
-  correctAnswer: string;
-}
+// Combined type for all task types
+export type TaskOrPoll = ITaskBase & {
+  visitLink?: string;
+  visitor?: mongoose.Types.ObjectId[];
+  question?: string;
+  options?: string[];
+  correctAnswer?: string;
+  inviteLink?: string;
+  invitee?: mongoose.Types.ObjectId[];
+  uploadLink?: string;
+  response?: string | number;
+};
 
-// Interface for quiz
-export interface IQuiz extends ITaskBase {
-  question: string;
-  options: string[];
-  correctAnswer: string;
-}
-
-// Interface for invite
-export interface IInvite extends ITaskBase {
-  inviteLink: string;
-  invitee?: string[];
-}
-
-// Combined type
-export type TaskOrPoll = IVisite | IPoll | IQuiz | IInvite;
-
-// Schema for the combined Task and Poll
 const TaskSchema: Schema = new mongoose.Schema(
   {
+    type: {
+      type: String,
+      // required: true,
+      // enum: ['visit', 'poll', 'quiz', 'invite', 'upload']
+    },
     category: {
       type: String,
-      required: true,
+      // required: true,
       enum: ['Actions', 'Answers', 'Social', 'On-chain action']
+    },
+    questId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true, 
+      ref: 'Quest'
     },
     creator: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'User'
-        },
+      ref: 'Kol' 
+    },
     
-        // Task-specific fields
-        visitLink: { type: String },
-    
-    // Poll and Quiz-specific fields
+    // Optional fields based on task type
+    visitLink: { type: String },
+    visitor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     question: { type: String },
     options: [{ type: String }],
-        correctAnswer: { type: String },
-    
-    // Invite-specific fields
+    correctAnswer: { type: String },
     inviteLink: { type: String },
-        invitee: [ { type: String } ]
-    
+    invitee: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    uploadLink: { type: String },
+    response: { type: String || Number },
+
+    completions: [{
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      completedAt: { type: Date, default: Date.now },
+      submission: { type: String }
+    }]
   },
   { timestamps: true }
 );

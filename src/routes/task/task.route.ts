@@ -14,14 +14,27 @@ taskRouter.post( "/task-options", createTaskOptions );
 // update the tasksoptions and categories
 taskRouter.post( "/update-task-options", updateTaskOptions );
 
-// get all tasks
-taskRouter.get( "/", taskController.getAllTask );
 
-// get task by id
-taskRouter.get( "/:id", taskController.getTaskByCreatorId );
+
+// get all tasks
+//in this route you need to apply middleware, only admin can get all tasks
+// taskRouter.get( "/", taskController.getAllTask );
+
+// get task by quest id
+taskRouter.get( "/:id", taskController.getTaskByQuestId );
+    
+// get task by creator (kol id)
+taskRouter.get( "/kol/:id", taskController.getTaskByCreatorId );
 
 // create task
 taskRouter.post( "/", taskController.addTask );
+
+
+// complete task
+taskRouter.post( "/complete", taskController.completeTask );
+
+// delete the task by its id
+taskRouter.delete( "/:id", taskController.deleteTask );
 
 // // create the task
 // taskRouter.post( '/visit', taskController.visitLink )

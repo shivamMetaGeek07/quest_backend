@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import TaskModel, { TaskOrPoll } from "../../models/task/task.model";
 import QuestModel from "../../models/quest/quest.model";
+import UserDb from "../../models/user/user";
+import KolsDB from "../../models/kols/kols";
 
 
 export const taskController = {
@@ -19,19 +21,52 @@ export const taskController = {
         }
     },
     
+     // get task by quest id
+  getTaskByQuestId: async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            res.status(400).json({ message: "Quest ID is required" });
+            return;
+        }
+        const tasks = await TaskModel.find({ questId:id });
+        if (tasks.length === 0) {
+            res.status(404).json({ message: "No tasks found for this quest" });
+            return;
+        }
+
+        res.status(200).json(tasks);
+    } catch (err) {
+        console.error("Error fetching tasks by quest ID:", err);
+        res.status(500).json({ 
+            message: "An error occurred while fetching tasks",
+            error: err instanceof Error ? err.message : String(err)
+        });
+    }
+},
+
     // get task by creator id
-    getTaskByCreatorId: async ( req: Request, res: Response ) :Promise<void>=>
-    {
-        try
-        {
-            const tasks = await TaskModel.find( { creator: req.params.creatorId } );
-            console.log( tasks );
-            res.json( tasks );
+    getTaskByCreatorId:async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            res.status(400).json({ message: "Creator ID is required" });
+            return;
         }
-        catch ( err )
-        {
-            res.json( { message: err } );
+        const tasks = await TaskModel.find({ creator:id });
+        if (tasks.length === 0) {
+            res.status(404).json({ message: "No tasks found for this creator" });
+            return;
         }
+
+        res.status(200).json(tasks);
+    } catch (err) {
+        console.error("Error fetching tasks by Creator ID:", err);
+        res.status(500).json({ 
+            message: "An error occurred while fetching tasks",
+            error: err instanceof Error ? err.message : String(err)
+        });
+    }
     },
 
      addTask: async ( req: Request, res: Response ) :Promise< void> =>
@@ -39,27 +74,128 @@ export const taskController = {
         console.log(req.body)
         try
         {
-            const questId = req.body.creator;
+            const questId = req.body.questId;
+            const creator = req.body.creator;
+
+            const userId = req.body.user
           
             const new_task: TaskOrPoll = await TaskModel.create( req.body );
 
+            const user = await UserDb.findById( userId );
             const quest = await QuestModel.findById( questId );
+            const creatorUser = await KolsDB.findById( creator );
             // console.log(quest)
             if ( quest )
             {
+                creatorUser?.task?.push( new_task._id );
+                user?.tasks?.push( new_task._id );
                 quest?.tasks?.push( new_task._id );
                 await quest?.save();
+                await creatorUser?.save();
+                await user?.save();
+                res.status( 200 ).json( { msg:"New Task has been created", new_task:new_task} );
             }else{
                 res.status( 400 ).json( { message: "Quest not found" } );
             }
-            res.status( 200 ).json( { msg:"New Task has been created", new_task:new_task} );
             } catch (error) {
             console.log( error )
             res.status( 500 ).json( { msg: "Error creating new  Task", error } );
         }
     },
 
+  completeTask: async (req: Request, res: Response): Promise<void> => {
+      try
+      {
+        console.log(req.body)
+        const { taskId, userId } = req.body;
 
+        const task = await TaskModel.findById(taskId);
+        if (!task) {
+            res.status(404).json({ message: "Task not found" });
+            return;
+        }
+
+        const user = await UserDb.findById(userId);
+        if (!user) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+
+        // Check if the user has already completed this task
+        const alreadyCompleted = task.completions?.some(
+            (completion) => completion.user.toString() === userId
+        );
+
+        if (alreadyCompleted) {
+            res.status(400).json({ message: "Task already completed by this user" });
+            return;
+        }
+
+        // Add the completion to the task
+        if (!task.completions) {
+            task.completions = [];
+        }
+        
+          
+        task?.completions.push( { user: userId, completedAt: new Date(), submission:  req.body.submission } );
+
+        
+        if ( req?.body?.visitLink )
+        {
+            task?.visitor?.push( req.body.userId );
+        }
+        else if ( req.body.inviteLink )
+        {
+            task?.invitee?.push( req.body.userId );
+        }
+
+        await task.save();
+
+        // Add the task to the user's completed tasks
+        if (!user.completedTasks) {
+            user.completedTasks = [];
+        }
+        user.completedTasks.push(taskId);
+        await user.save();
+
+        res.status(200).json({ message: "Task completed successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error completing task", error });
+    }
+},
+
+
+    // delete the task
+    deleteTask: async ( req:Request, res:Response ): Promise<void> =>
+    {
+        try
+        {
+            const taskId = req.params.taskId;
+            const userId = req?.body?.creator._id;
+            const task = await TaskModel.findById( taskId );
+            if ( !task )
+            {
+                res.status( 404 ).json( { message: "Task not found" } );
+            }
+            else if ( task?.creator !== userId )
+            {
+                res.status( 403 ).json( {
+                    message: "You are not authorized to delete this task"
+                    } );
+            }
+            else
+            {
+                await TaskModel.findByIdAndDelete( taskId );
+                res.status( 200 ).json( { message: "Task deleted successfully" } );
+            }
+        } catch ( error )
+        {
+            console.error( error );
+            res.status( 500 ).json( { message: "Error deleting task", error } );
+        }
+    },
+    
      
      
      

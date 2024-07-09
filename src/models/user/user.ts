@@ -1,5 +1,6 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
-import { Quest } from "../quests/quest.model";
+import { Quest } from "../quest/quest.model";
+import { TaskOrPoll } from "../task/task.model";
 
 // Define an interface for the TwitterInfo schema
 export interface ITwitterInfo {
@@ -27,7 +28,11 @@ export interface IUser extends Document {
   role: string;
   image: string;
   rank: string;
-  quest: Quest[];
+  quest: string[];
+  tasks: string[];
+  community: string[];
+  rewards: string[];
+  completedTasks: string[];
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
 }
@@ -41,7 +46,11 @@ const userSchema: Schema = new mongoose.Schema(
     image: { type: String, required: true },
     role: { type: String, default: 'user' },
     rank: { type: String, default: 'beginner' },
-    quest: [{ type: Schema.Types.ObjectId, ref: "Quest" }],
+    quest: [ { type: Schema.Types.ObjectId, ref: "Quest" } ],
+    tasks: [ { type: Schema.Types.ObjectId, ref: "TaskOrPoll" } ],
+    completedTasks: [ { type: mongoose.Schema.Types.ObjectId, ref: 'TaskOrPoll' } ],
+    community: [ { type: Schema.Types.ObjectId, ref: "Community" } ],
+    rewards: [ { type: Schema.Types.ObjectId, ref: "Reward" } ],
     twitterInfo: {
       twitterId: { type: String },
       username: { type: String },
