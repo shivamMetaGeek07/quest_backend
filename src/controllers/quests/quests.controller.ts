@@ -1,40 +1,38 @@
 import { Request, Response } from "express";
-import QuestModel, { Quest } from "../../models/quests/quest.model";
+import QuestModel, { Quest } from "../../models/quest/quest.model";
 import CommunityModel from "../../models/community/community.model";
 
 
 export const questController = {
 
     // create a quest
-    createQuest: async ( req: Request, res: Response ) =>
-    {
-        // console.log( req.body );
+  createQuest: async (req: Request, res: Response) => {
+    console.log("req form qust controlelr:0", req.body);
 
-        try
-        {
-            const {communityId} =  req.body
-             
-            const newQuest: Quest = await QuestModel.create( req.body );
-            // verify the currenet exists
-         
-            const currentCumminty = await CommunityModel.findById( communityId );
-            let quest = currentCumminty?.quests
-            // console.log( "currentCumminty :- ", currentCumminty?.quests );
-            if ( currentCumminty )
-            {
-                quest?.push( newQuest._id );
-                 await currentCumminty.save();
-            } else
-            {
-                res.status( 400 ).json( { message: "Community not found" } );
-            }
-            // console.log( "updatedCumminty :- ", currentCumminty?.quests );
+    try {
+        const { communityId } = req.body;
 
-            res.status( 201 ).json( { newQuest: newQuest, msg: "New Quest Created successful" } );
-        } catch (error) {
-            res.status( 500 ).json( { msg: "Error creating quest", error: error } );
+        // Create a new quest
+        const newQuest: Quest = await QuestModel.create(req.body);
+
+        // Verify if the community exists
+        const currentCommunity = await CommunityModel.findById(communityId);
+        if (!currentCommunity) {
+            res.status(400).json({ message: "Community not found" });
+            return; // Stop further execution
         }
-    },
+
+        // Update the community with the new quest ID
+        currentCommunity?.quests?.push(newQuest._id);
+        await currentCommunity.save();
+
+        // Send success response
+        res.status(201).json({ newQuest: newQuest, msg: "New Quest Created successfully" });
+    } catch (error) {
+        res.status(500).json({ msg: "Error creating quest", error: error });
+    }
+},
+
 
     //  get all quests
     getAllQuests: async ( req: Request, res: Response ) =>

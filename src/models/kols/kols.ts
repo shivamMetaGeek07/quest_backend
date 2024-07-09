@@ -16,7 +16,8 @@ export interface IKolsData extends Document {
   badjes?: string[];
   upVotes: number;
   downVotes: number;
-  community:Community[]
+  community: Community[];
+  task?: string[];
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
 }
@@ -36,7 +37,10 @@ const KolsDataSchema: Schema = new Schema({
   upVotes: { type: Number },
   downVotes: { type: Number },
   community: [{ type: Schema.Types.ObjectId, ref: "Community" }],
-  quest: [{ type: Schema.Types.ObjectId, ref: "Quest" }],
+  quest: [ { type: Schema.Types.ObjectId, ref: "Quest" } ],
+  task: [ {
+    type: Schema.Types.ObjectId, ref: "Task" 
+  }],
   twitterInfo: {
     twitterId: { type: String },
     username: { type: String },
