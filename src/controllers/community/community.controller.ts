@@ -20,11 +20,16 @@ export const CommunityController = {
     // get all communities
     getAllCommunities: async ( req: Request, res: Response ): Promise<void> =>
     {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
         try
         {
-            const communities: Community[] = await CommunityModel.find();
+            const communities: Community[] = await CommunityModel.find().skip(skip).limit(limit);
+            const totalCommunities = await CommunityModel.countDocuments();
+            const totalPages = Math.ceil(totalCommunities / limit);
             res.status( 200 ).json( {
-                communities: communities,
+                communities: communities,totalPages,
                 msg: "Fetched Communities successfully"
             } );
         } catch ( error )
@@ -33,6 +38,7 @@ export const CommunityController = {
         }
     },
 
+    
     // Get a specific community by ID
     getCommunityById: async ( req: Request, res: Response ): Promise<void> =>
     {
