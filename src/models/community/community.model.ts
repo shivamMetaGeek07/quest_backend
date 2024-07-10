@@ -2,7 +2,7 @@ import mongoose, { Model, Schema } from "mongoose";
 
 export interface Community
 {
-    _id: string;
+    _id?: string | any;
     title: string;
     description?: string;
     count_of_members?: number;

@@ -126,7 +126,9 @@ export const taskController = {
             (completion) => completion.user.toString() === userId
         );
 
-        if (alreadyCompleted) {
+          if ( alreadyCompleted )
+          {
+            console.log("message: Task already completed by this user")
             res.status(400).json({ message: "Task already completed by this user" });
             return;
         }
@@ -137,7 +139,7 @@ export const taskController = {
         }
         
           
-        task?.completions.push( { user: userId, completedAt: new Date(), submission:  req.body.submission } );
+        task?.completions.push( { user: userId, completedAt: new Date(), submission:  req.body.submission, userName : req.body.userName } );
 
         
         if ( req?.body?.visitLink )
