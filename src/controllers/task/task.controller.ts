@@ -138,10 +138,8 @@ export const taskController = {
             task.completions = [];
         }
         
-          
         task?.completions.push( { user: userId, completedAt: new Date(), submission:  req.body.submission, userName : req.body.userName } );
 
-        
         if ( req?.body?.visitLink )
         {
             task?.visitor?.push( req.body.userId );
