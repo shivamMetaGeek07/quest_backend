@@ -71,6 +71,31 @@ export const questController = {
         }
     },
     
+     // complete quest detail of several ids (bulk)
+
+    getQuestsByIds: async (req: Request, res: Response): Promise<void> => {
+    try {
+        const questIds = req.body.questIds;
+        
+        if (!Array.isArray(questIds)) {
+            res.status(400).json({ message: 'Invalid input: quest must be an array' });
+            return;
+        }
+
+        const quests = await QuestModel.find({ _id: { $in: questIds } });
+        
+        res.status(200).json({
+            message: "Communities fetched successfully",
+            quests
+        });
+    } catch (error) {
+        console.error('Error in getQuestsByIds:', error);
+        res.status(500).json({
+            message: 'Internal server error while fetching quests'
+        });
+    }
+},
+
     // update a quest
     updateQuest: async ( req: Request, res: Response ) =>
     {

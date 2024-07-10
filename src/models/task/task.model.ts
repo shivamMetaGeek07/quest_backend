@@ -11,12 +11,14 @@ interface ITaskBase extends Document {
     user: mongoose.Types.ObjectId;
     completedAt: Date;
     submission?: string;
+    userName?: string;
   }>;
 } 
 
 
 // Combined type for all task types
 export type TaskOrPoll = ITaskBase & {
+  _id: string;
   visitLink?: string;
   visitor?: mongoose.Types.ObjectId[];
   question?: string;
@@ -65,7 +67,8 @@ const TaskSchema: Schema = new mongoose.Schema(
     completions: [{
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       completedAt: { type: Date, default: Date.now },
-      submission: { type: String }
+      submission: { type: String },
+      userName : {type : String}
     }]
   },
   { timestamps: true }

@@ -14,6 +14,9 @@ questsRouter.get( "/", questController.getAllQuests );
 // get a quest by id
 questsRouter.get( "/:id", questController.getQuestById );
 
+// get quests by ids
+questsRouter.post( "/getByIds", questController.getQuestsByIds );
+
 // update a quest by id
 questsRouter.put( "/:id", questController.updateQuest );
  
