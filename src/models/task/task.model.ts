@@ -1,7 +1,7 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 // Base interface for all task types
-interface ITaskBase extends Document {
+export interface ITaskBase extends Document {
   category: 'Actions' | 'Answers' | 'Social' | 'On-chain action';
   // type: 'visit' | 'poll' | 'quiz' | 'invite' | 'upload';
   type: string;
