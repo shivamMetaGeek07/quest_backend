@@ -3,6 +3,23 @@ import TaskModel, { TaskOrPoll } from "../../models/task/task.model";
 import QuestModel from "../../models/quest/quest.model";
 import UserDb from "../../models/user/user";
 import KolsDB from "../../models/kols/kols";
+import { ReferralDb} from "../../models/other models/models";
+import CommunityModel from "../../models/community/community.model";
+
+const generateReferralCode = async (randomLength: number) => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let randomPart = '';
+
+    for (let i = 0; i < randomLength; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        randomPart += characters[randomIndex];
+    }
+
+
+    const finalReferralCode =  randomPart;
+
+    return finalReferralCode;
+}
 
 
 export const taskController = {
@@ -196,9 +213,55 @@ export const taskController = {
         }
     },
     
-     
-     
-     
+   
+
+    referralGenerate : async (req: Request, res: Response): Promise<void> => {
+        const { userId ,questId,taskId,expireDate } = req.body;
+        console.log("first",req.body)
+        if (!userId) {
+            res.status(500).json({ message: "User Not Found Please Login" });
+            return;
+        }
+        try {
+            const randomLength = 10;
+            let referral: string;
+            let referralCheck: any;
+            const community = await CommunityModel.findOne({ quests: questId });
+            const communityInfo=community?._id
+            
+            // Generate and check the referral code until a unique one is found
+            do {
+                referral = await generateReferralCode(randomLength);
+                referralCheck = await ReferralDb.findOne({ referralCode: referral });
+            } while (referralCheck);
+            
+            // Save the new referral code 
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + expireDate); // Set expiration date
+
+        // Save the new referral code with the expiration date
+            const user = new ReferralDb({
+            referralCode: referral,
+            userInfo: userId,
+            questInfo:questId,
+            taskInfo: taskId,
+            communityInfo,
+            expiresAt
+            });
+
+            await user.save();
+
+            console.log(referral);
+            res.status(201).send(referral);
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Error generating referral code", error });
+        }
+    }
+    
+    
+    
      
      
      
