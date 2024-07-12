@@ -39,7 +39,6 @@ export const questController = {
     {
         try
         {
-
             const allQuests: Quest[] = await QuestModel.find();
             res.status( 200 ).json( {
                 allQuests: allQuests, msg:

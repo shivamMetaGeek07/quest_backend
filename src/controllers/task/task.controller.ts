@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import TaskModel, { TaskOrPoll } from "../../models/task/task.model";
-import QuestModel from "../../models/quest/quest.model";
-import UserDb from "../../models/user/user";
+import QuestModel, { Quest } from "../../models/quest/quest.model";
+import UserDb, { IUser } from "../../models/user/user";
 import KolsDB from "../../models/kols/kols";
 import { ReferralDb} from "../../models/other models/models";
 import CommunityModel from "../../models/community/community.model";
@@ -25,7 +25,7 @@ const generateReferralCode = async (randomLength: number) => {
 export const taskController = {
 
     // get all task
-    getAllTask: async ( req: Request, res: Response ):Promise<void> =>
+    getAllTask: async ( req: Request, res: Response ): Promise<void> =>
     {
         try
         {
@@ -38,63 +38,73 @@ export const taskController = {
         }
     },
     
-     // get task by quest id
-  getTaskByQuestId: async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { id } = req.params;
-        if (!id) {
-            res.status(400).json({ message: "Quest ID is required" });
-            return;
-        }
-        const tasks = await TaskModel.find({ questId:id });
-        if (tasks.length === 0) {
-            res.status(404).json({ message: "No tasks found for this quest" });
-            return;
-        }
+    // get task by quest id
+    getTaskByQuestId: async ( req: Request, res: Response ): Promise<void> =>
+    {
+        try
+        {
+            const { id } = req.params;
+            if ( !id )
+            {
+                res.status( 400 ).json( { message: "Quest ID is required" } );
+                return;
+            }
+            const tasks = await TaskModel.find( { questId: id } );
+            if ( tasks.length === 0 )
+            {
+                res.status( 404 ).json( { message: "No tasks found for this quest" } );
+                return;
+            }
 
-        res.status(200).json(tasks);
-    } catch (err) {
-        console.error("Error fetching tasks by quest ID:", err);
-        res.status(500).json({ 
-            message: "An error occurred while fetching tasks",
-            error: err instanceof Error ? err.message : String(err)
-        });
-    }
-},
-
-    // get task by creator id
-    getTaskByCreatorId:async (req: Request, res: Response): Promise<void> => {
-    try {
-        const { id } = req.params;
-        if (!id) {
-            res.status(400).json({ message: "Creator ID is required" });
-            return;
+            res.status( 200 ).json( tasks );
+        } catch ( err )
+        {
+            console.error( "Error fetching tasks by quest ID:", err );
+            res.status( 500 ).json( {
+                message: "An error occurred while fetching tasks",
+                error: err instanceof Error ? err.message : String( err )
+            } );
         }
-        const tasks = await TaskModel.find({ creator:id });
-        if (tasks.length === 0) {
-            res.status(404).json({ message: "No tasks found for this creator" });
-            return;
-        }
-
-        res.status(200).json(tasks);
-    } catch (err) {
-        console.error("Error fetching tasks by Creator ID:", err);
-        res.status(500).json({ 
-            message: "An error occurred while fetching tasks",
-            error: err instanceof Error ? err.message : String(err)
-        });
-    }
     },
 
-     addTask: async ( req: Request, res: Response ) :Promise< void> =>
+    // get task by creator id
+    getTaskByCreatorId: async ( req: Request, res: Response ): Promise<void> =>
     {
-        console.log(req.body)
+        try
+        {
+            const { id } = req.params;
+            if ( !id )
+            {
+                res.status( 400 ).json( { message: "Creator ID is required" } );
+                return;
+            }
+            const tasks = await TaskModel.find( { creator: id } );
+            if ( tasks.length === 0 )
+            {
+                res.status( 404 ).json( { message: "No tasks found for this creator" } );
+                return;
+            }
+
+            res.status( 200 ).json( tasks );
+        } catch ( err )
+        {
+            console.error( "Error fetching tasks by Creator ID:", err );
+            res.status( 500 ).json( {
+                message: "An error occurred while fetching tasks",
+                error: err instanceof Error ? err.message : String( err )
+            } );
+        }
+    },
+
+    addTask: async ( req: Request, res: Response ): Promise<void> =>
+    {
+        console.log( req.body );
         try
         {
             const questId = req.body.questId;
             const creator = req.body.creator;
 
-            const userId = req.body.user
+            const userId = req.body.user;
           
             const new_task: TaskOrPoll = await TaskModel.create( req.body );
 
@@ -110,82 +120,147 @@ export const taskController = {
                 await quest?.save();
                 await creatorUser?.save();
                 await user?.save();
-                res.status( 200 ).json( { msg:"New Task has been created", new_task:new_task} );
-            }else{
+                res.status( 200 ).json( { msg: "New Task has been created", new_task: new_task } );
+            } else
+            {
                 res.status( 400 ).json( { message: "Quest not found" } );
             }
-            } catch (error) {
-            console.log( error )
+        } catch ( error )
+        {
+            console.log( error );
             res.status( 500 ).json( { msg: "Error creating new  Task", error } );
         }
     },
 
-  completeTask: async (req: Request, res: Response): Promise<void> => {
-      try
-      {
-        console.log(req.body)
-        const { taskId, userId } = req.body;
+    completeTask: async ( req: Request, res: Response ): Promise<void> =>
+    {
+        try
+        {
+            console.log( req.body );
+            const { taskId, userId } = req.body;
 
-        const task = await TaskModel.findById(taskId);
-        if (!task) {
-            res.status(404).json({ message: "Task not found" });
-            return;
-        }
+            const task = await TaskModel.findById( taskId );
+            if ( !task )
+            {
+                res.status( 404 ).json( { message: "Task not found" } );
+                return;
+            }
 
-        const user = await UserDb.findById(userId);
-        if (!user) {
-            res.status(404).json({ message: "User not found" });
-            return;
-        }
+            const user = await UserDb.findById( userId );
+            if ( !user )
+            {
+                res.status( 404 ).json( { message: "User not found" } );
+                return;
+            }
 
-        // Check if the user has already completed this task
-        const alreadyCompleted = task.completions?.some(
-            (completion) => completion.user.toString() === userId
-        );
+            // Check if the user has already completed this task
+            const alreadyCompleted = task.completions?.some(
+                ( completion ) => completion.user.toString() === userId
+            );
 
-          if ( alreadyCompleted )
-          {
-            console.log("message: Task already completed by this user")
-            res.status(400).json({ message: "Task already completed by this user" });
-            return;
-        }
+            if ( alreadyCompleted )
+            {
+                console.log( "message: Task already completed by this user" );
+                res.status( 400 ).json( { message: "Task already completed by this user" } );
+                return;
+            }
 
-        // Add the completion to the task
-        if (!task.completions) {
-            task.completions = [];
-        }
+            // Add the completion to the task
+            if ( !task.completions )
+            {
+                task.completions = [];
+            }
         
-        task?.completions.push( { user: userId, completedAt: new Date(), submission:  req.body.submission, userName : req.body.userName } );
+            task?.completions.push( { user: userId, completedAt: new Date(), submission: req.body.submission, userName: req.body.userName } );
 
-        if ( req?.body?.visitLink )
+            if ( req?.body?.visitLink )
+            {
+                task?.visitor?.push( req.body.userId );
+            }
+            else if ( req.body.inviteLink )
+            {
+                task?.invitee?.push( req.body.userId );
+            }
+
+            await task.save();
+
+            // Add the task to the user's completed tasks
+            if ( !user.completedTasks )
+            {
+                user.completedTasks = [];
+            }
+            user.completedTasks.push( taskId );
+            await user.save();
+
+            res.status( 200 ).json( { message: "Task completed successfully" } );
+        } catch ( error )
         {
-            task?.visitor?.push( req.body.userId );
+            console.error( error );
+            res.status( 500 ).json( { message: "Error completing task", error } );
         }
-        else if ( req.body.inviteLink )
-        {
-            task?.invitee?.push( req.body.userId );
-        }
+    },
 
-        await task.save();
+    // rewards claim
+   claimReward: async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { userId, questId } = req.body;
 
-        // Add the task to the user's completed tasks
-        if (!user.completedTasks) {
-            user.completedTasks = [];
-        }
-        user.completedTasks.push(taskId);
-        await user.save();
+    const quest: Quest | null = await QuestModel.findById(questId);
+    const user: IUser | null = await UserDb.findById(userId);
 
-        res.status(200).json({ message: "Task completed successfully" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error completing task", error });
+    if (!quest || !user) {
+      return res.status(404).json({
+        message: "Quest or user not found"
+      });
     }
+
+    // Check if the reward has already been claimed by the user
+    if (user.quest.includes(questId)) {
+      return res.status(200).json({
+        message: "Reward already claimed"
+      });
+    }
+
+    // Update user's rewards
+    quest.rewards.forEach(reward => {
+      if (reward.type === 'xp') {
+        user.rewards.xp += reward.value;
+      } else if (reward.type === 'coin') {
+        user.rewards.coins += reward.value;
+      }
+    });
+
+    // Add questId to user's quests
+    user.quest.push(questId);
+
+      if ( user.quest.length > 5 ){
+          user.badges?.push("MAXI")
+    } else if ( user.quest.length > 2 ) {
+            user.badges?.push("ENTHUSIAST")
+        } else {
+          user.badges?.push("NOOB")
+      }
+      
+    // Save the updated user
+    await user.save();
+
+    res.status(200).json({ 
+      message: "Reward claimed successfully",
+      updatedRewards: user.rewards
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error claiming reward", error });
+  }
 },
 
 
+
+    
+
     // delete the task
-    deleteTask: async ( req:Request, res:Response ): Promise<void> =>
-    {
+    deleteTask: async ( req:Request, res:Response ): Promise<void> =>{
+    
         try
         {
             const taskId = req.params.taskId;

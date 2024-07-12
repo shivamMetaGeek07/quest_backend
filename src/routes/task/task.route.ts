@@ -36,6 +36,9 @@ taskRouter.post( "/", taskController.addTask );
 // complete task
 taskRouter.post( "/complete", taskController.completeTask );
 
+// claim reward
+taskRouter.post( "/claim", taskController.claimReward );
+
 // delete the task by its id
 taskRouter.delete( "/:id", taskController.deleteTask );
 
