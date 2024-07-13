@@ -28,14 +28,17 @@ export interface IUser extends Document {
   bio:string;
   nickname:string;
   bgImage:string;
-  badjes?: string[];
+  badges?: string[];
   role: string;
   image: string;
-  rank: string;
+  rank: number;
+  level: string;
   quest: string[];
-  tasks: string[];
   community: string[];
-  rewards: string[];
+   rewards: {
+    xp: number;
+    coins: number;
+  };
   completedTasks: string[];
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
@@ -53,12 +56,15 @@ const userSchema: Schema = new mongoose.Schema(
     nickname:  {type:String},
     badges:{type:[String]},
     role: { type: String, default: 'user' },
-    rank: { type: String, default: 'beginner' },
+    level: { type: String, default: 'NOOB' },
+    rank: { type: Number, default: 0 },
     quest: [ { type: Schema.Types.ObjectId, ref: "Quest" } ],
-    tasks: [ { type: Schema.Types.ObjectId, ref: "TaskOrPoll" } ],
     completedTasks: [ { type: mongoose.Schema.Types.ObjectId, ref: 'TaskOrPoll' } ],
     community: [ { type: Schema.Types.ObjectId, ref: "Community" } ],
-    rewards: [ { type: Schema.Types.ObjectId, ref: "Reward" } ],
+     rewards: {
+      xp: { type: Number, default: 0 },
+      coins: { type: Number, default: 0 }
+    },
     twitterInfo: {
       twitterId: { type: String },
       username: { type: String },
