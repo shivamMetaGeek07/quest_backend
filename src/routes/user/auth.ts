@@ -80,6 +80,23 @@ authrouter.get(
   passport.authenticate("discord", {
     successRedirect:`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`,
     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
+     }) 
+);
+
+authrouter.get('/auth/telegram', (req:Request, res:Response) => {
+  res.send(`
+    <script async src="https://telegram.org/js/telegram-widget.js?7"
+            data-telegram-login="${process.env.TELEGRAM_BOT_USERNAME}"
+            data-size="large"
+            data-auth-url="${process.env.PUBLIC_SERVER_URL}/auth/telegram/callback"
+            data-request-access="write"></script>
+  `);
+});
+// Telegram callback route
+authrouter.get('/auth/telegram/callback',
+  passport.authenticate('telegram', {
+    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`,
+    failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
      })
 );
 

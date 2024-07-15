@@ -10,7 +10,12 @@ export interface ITwitterInfo {
   oauthToken?: string;
   oauthTokenSecret?: string;
 }
-
+export interface ITeleInfo {
+  telegramId?: string;
+  teleName?: string;
+  teleusername?: string; 
+}
+ 
 export interface IDiscordInfo {
   discordId?: string;
   username?: string;
@@ -39,6 +44,7 @@ export interface IUser extends Document {
   completedTasks: string[];
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
+  teleInfo?:ITeleInfo;
 }
 
 // Create the User schema
@@ -73,6 +79,11 @@ const userSchema: Schema = new mongoose.Schema(
       accessToken: { type: String },
       refreshToken: { type: String },
       guilds: { type: [String] },
+    },
+    teleInfo: {
+      telegramId: { type: String },
+      teleName: { type: String },
+      teleusername: { type: String },
     },
   }, 
   { timestamps: true }
