@@ -115,7 +115,7 @@ export const taskController = {
             if ( quest )
             {
                 creatorUser?.task?.push( new_task._id );
-                user?.tasks?.push( new_task._id );
+                user?.completedTasks?.push( new_task._id );
                 quest?.tasks?.push( new_task._id );
                 await quest?.save();
                 await creatorUser?.save();
