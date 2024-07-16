@@ -42,6 +42,8 @@ export interface IUser extends Document {
   completedTasks: string[];
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
+  followers: string[];
+  following: string[];
 }
 
 // Create the User schema
@@ -80,6 +82,8 @@ const userSchema: Schema = new mongoose.Schema(
       refreshToken: { type: String },
       guilds: { type: [String] },
     },
+    followers: [{type:String,default:[]}],
+    following: [{ type: String,default:[]}],
   }, 
   { timestamps: true }
 );

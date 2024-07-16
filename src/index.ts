@@ -14,6 +14,7 @@ import Bottleneck from "bottleneck";
 import adminRoutes from './routes/admin/admin';
 import s3routes from "./routes/s3routes";
 import taskRouter from "./routes/task/task.route";
+import userRouter from "./routes/user/user";
 
 dotenv.config();
 const app: Express = express();
@@ -54,9 +55,12 @@ app.use(passport.initialize());
 app.use(passport.session());
 // Google auth route
 app.use("/auth", authrouter);
+app.use("/user", userRouter);
 app.use('/kols', kolsRouter);
 app.use('/admin', adminRoutes);
 app.use('/aws',s3routes);
+
+
 
 // Example route
 app.get('/', (req: Request, res: Response) => {
