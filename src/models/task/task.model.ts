@@ -1,7 +1,7 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 // Base interface for all task types
-interface ITaskBase extends Document {
+export interface ITaskBase extends Document {
   category: 'Actions' | 'Answers' | 'Social' | 'On-chain action';
   // type: 'visit' | 'poll' | 'quiz' | 'invite' | 'upload';
   type: string;
@@ -15,31 +15,41 @@ interface ITaskBase extends Document {
   }>;
 } 
 
+interface IQuiz {
+  question: string;
+  options: string[];
+  correctAnswer: string;
+}
+
+interface IPoll {
+  question: string;
+  options: string[];
+}
 
 // Combined type for all task types
 export type TaskOrPoll = ITaskBase & {
   _id: string;
   visitLink?: string;
   visitor?: mongoose.Types.ObjectId[];
-  question?: string;
-  options?: string[];
+  quizzes?: IQuiz[];
+  polls?: IPoll[];
   correctAnswer?: string;
   inviteLink?: string;
   invitee?: mongoose.Types.ObjectId[];
   uploadLink?: string;
   response?: string | number;
+  taskName?: string;
+  taskDescription: string;
 };
+
 
 const TaskSchema: Schema = new mongoose.Schema(
   {
     type: {
       type: String,
-      // required: true,
-      // enum: ['visit', 'poll', 'quiz', 'invite', 'upload']
     },
     category: {
       type: String,
-      // required: true,
       enum: ['Actions', 'Answers', 'Social', 'On-chain action']
     },
     questId: {
@@ -52,17 +62,30 @@ const TaskSchema: Schema = new mongoose.Schema(
       required: true,
       ref: 'Kol' 
     },
+    taskName: {
+      type: String,
+    },
+    taskDescription: {
+      type: String,
+    },
+    
     
     // Optional fields based on task type
     visitLink: { type: String },
     visitor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    question: { type: String },
-    options: [{ type: String }],
-    correctAnswer: { type: String },
+    quizzes: [{
+      question: { type: String },
+      options: [{ type: String }],
+      correctAnswer: { type: String }
+    }],
+    polls: [{
+      question: { type: String },
+      options: [{ type: String }]
+    }],
     inviteLink: { type: String },
     invitee: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     uploadLink: { type: String },
-    response: { type: String || Number },
+    response: { type: mongoose.Schema.Types.Mixed },
 
     completions: [{
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

@@ -45,8 +45,8 @@ const QuestSchema: Schema = new mongoose.Schema<Quest>({
   },
   tasks: [],
   rewards: [{
-    type: { type: String, required: true },
-    value: { type: Number, required: true }
+    type: { type: String },
+    value: { type: Number }
   }]
 }, {
   timestamps: true

@@ -17,7 +17,6 @@ export const createKols = async (req: Request, res: Response, next: NextFunction
     if (!req.body.kolsData) {
       return res.status(400).json({ error: "Bad Request", message: "No KolsData provided" });
     }
-
     const { name, userName, role, bio, imageUrl, upVotes, downVotes, socialLinks } = req.body.kolsData;
 
     if (!name || !userName || !role) {

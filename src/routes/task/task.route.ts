@@ -1,6 +1,7 @@
 import express from "express";
 import { taskController } from "../../controllers/task/task.controller";
 import { createTaskOptions, getTaskOptions, updateTaskOptions } from "../../controllers/task/taskOption.controller";
+import { RefrralMiddleaware } from "../../middleware/user/referralAuthorize";
 
 
 const taskRouter = express.Router();
@@ -13,6 +14,8 @@ taskRouter.post( "/task-options", createTaskOptions );
 
 // update the tasksoptions and categories
 taskRouter.post( "/update-task-options", updateTaskOptions );
+
+taskRouter.post('/get/referral',taskController.referralGenerate);
 
 
 
@@ -32,6 +35,9 @@ taskRouter.post( "/", taskController.addTask );
 
 // complete task
 taskRouter.post( "/complete", taskController.completeTask );
+
+// claim reward
+taskRouter.post( "/claim", taskController.claimReward );
 
 // delete the task by its id
 taskRouter.delete( "/:id", taskController.deleteTask );
