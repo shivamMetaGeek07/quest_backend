@@ -33,21 +33,23 @@ export interface IUser extends Document {
   bio:string;
   nickname:string;
   bgImage:string;
-  badjes?: string[];
+  badges?: string[];
   role: string;
   image: string;
-  rank: string;
+  rank: number;
+  level: string;
   quest: string[];
-  tasks: string[];
   community: string[];
-  rewards: {
+   rewards: {
     xp: number;
     coins: number;
-  };
+  };
   completedTasks: string[];
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
-  teleInfo?:ITeleInfo;
+  teleinfo?:ITeleInfo;
+  followers: string[];
+  following: string[];
 }
  
 // Create the User schema
@@ -62,15 +64,15 @@ const userSchema: Schema = new mongoose.Schema(
     nickname:  {type:String},
     badges:{type:[String]},
     role: { type: String, default: 'user' },
-    rank: { type: String, default: 'beginner' },
+    level: { type: String, default: 'NOOB' },
+    rank: { type: Number, default: 0 },
     quest: [ { type: Schema.Types.ObjectId, ref: "Quest" } ],
-    tasks: [ { type: Schema.Types.ObjectId, ref: "TaskOrPoll" } ],
     completedTasks: [ { type: mongoose.Schema.Types.ObjectId, ref: 'TaskOrPoll' } ],
     community: [ { type: Schema.Types.ObjectId, ref: "Community" } ],
-    rewards: {
+     rewards: {
       xp: { type: Number, default: 0 },
-      coins: { type: Number, default: 0 }
-    },
+      coins: { type: Number, default: 0 }
+    },
     twitterInfo: {
       twitterId: { type: String },
       username: { type: String },
@@ -91,6 +93,8 @@ const userSchema: Schema = new mongoose.Schema(
       teleName: { type: String },
       teleusername: { type: String },
     },
+    followers: [{type:String,default:[]}],
+    following: [{ type: String,default:[]}],
   }, 
   { timestamps: true }
 );
