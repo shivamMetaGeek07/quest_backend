@@ -1,8 +1,6 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
-import { Quest } from "../quest/quest.model";
-import { TaskOrPoll } from "../task/task.model";
 
-// Define an interface for the TwitterInfo schema
+// Define interfaces for the sub-schemas
 export interface ITwitterInfo {
   twitterId?: string;
   username?: string;
@@ -10,12 +8,13 @@ export interface ITwitterInfo {
   oauthToken?: string;
   oauthTokenSecret?: string;
 }
+
 export interface ITeleInfo {
   telegramId?: string;
   teleName?: string;
   teleusername?: string; 
 }
- 
+
 export interface IDiscordInfo {
   discordId?: string;
   username?: string;
@@ -24,34 +23,35 @@ export interface IDiscordInfo {
   refreshToken: string;
   guilds?: string[];
 }
- 
+
 // Define an interface for the User schema
 export interface IUser extends Document {
   googleId: string;
   displayName: string;
   email: string;
-  bio:string;
-  nickname:string;
-  bgImage:string;
+  bio: string;
+  nickname: string;
+  bgImage: string;
   badges?: string[];
   role: string;
   image: string;
   rank: number;
   level: string;
-  quest: string[];
-  community: string[];
-   rewards: {
+  quest: mongoose.Types.ObjectId[];
+  community: mongoose.Types.ObjectId[];
+  rewards: {
     xp: number;
     coins: number;
   };
-  completedTasks: string[];
+  completedTasks: mongoose.Types.ObjectId[];
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
-  teleinfo?:ITeleInfo;
+  teleInfo?: ITeleInfo;
+  tasks?: mongoose.Types.ObjectId[]; // Add this line
   followers: string[];
   following: string[];
 }
- 
+
 // Create the User schema
 const userSchema: Schema = new mongoose.Schema(
   {
@@ -59,19 +59,19 @@ const userSchema: Schema = new mongoose.Schema(
     displayName: { type: String, required: true },
     email: { type: String, required: true },
     image: { type: String, required: true },
-    bio:  {type:String},
-    bgImage:{type:String},
-    nickname:  {type:String},
-    badges:{type:[String]},
+    bio: { type: String },
+    bgImage: { type: String },
+    nickname: { type: String },
+    badges: { type: [String] },
     role: { type: String, default: 'user' },
     level: { type: String, default: 'NOOB' },
     rank: { type: Number, default: 0 },
-    quest: [ { type: Schema.Types.ObjectId, ref: "Quest" } ],
-    completedTasks: [ { type: mongoose.Schema.Types.ObjectId, ref: 'TaskOrPoll' } ],
-    community: [ { type: Schema.Types.ObjectId, ref: "Community" } ],
-     rewards: {
+    quest: [{ type: mongoose.Schema.Types.ObjectId, ref: "Quest" }],
+    completedTasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
+    community: [{ type: mongoose.Schema.Types.ObjectId, ref: "Community" }],
+    rewards: {
       xp: { type: Number, default: 0 },
-      coins: { type: Number, default: 0 }
+      coins: { type: Number, default: 0 },
     },
     twitterInfo: {
       twitterId: { type: String },
@@ -93,9 +93,10 @@ const userSchema: Schema = new mongoose.Schema(
       teleName: { type: String },
       teleusername: { type: String },
     },
-    followers: [{type:String,default:[]}],
-    following: [{ type: String,default:[]}],
-  }, 
+    followers: [{ type: String, default: [] }],
+    following: [{ type: String, default: [] }],
+    tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }] // 
+  },
   { timestamps: true }
 );
 
