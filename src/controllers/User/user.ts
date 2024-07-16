@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import User from "../../models/user/user";
+import { CommandInteractionOptionResolver } from "discord.js";
 
 const getUserById = async (req: Request, res: Response) => {
 
@@ -73,4 +74,14 @@ const unfollowUser = async (req: Request, res: Response) => {
   }
 };
 
-export { getUserById, followUser, unfollowUser };
+const getAllUser=async (req: Request, res: Response) => {
+  try {
+    const users: any = await User.find();
+    console.log(users);
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ error: err });
+  }
+}
+
+export { getUserById, followUser, unfollowUser,getAllUser };
