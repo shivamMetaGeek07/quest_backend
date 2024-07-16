@@ -149,8 +149,8 @@ const scopes = ['identify', 'email', 'guilds', 'guilds.join'];
 passport.use(
   new DiscordStrategy(
     {
-      clientID: process.env.DISCORD_ID!,
-      clientSecret: process.env.DISCORD_SECRET_KEY!,
+      clientID: "1257216544438616116",
+      clientSecret: "fgUstQ4-P6y5eS9ulXtDwGE8tn8U0m86",
       callbackURL: `${process.env.PUBLIC_SERVER_URL}/auth/discord/callback`,
       scope: ['identify', 'email', 'guilds', 'guilds.join'],
       passReqToCallback: true,

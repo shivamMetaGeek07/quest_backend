@@ -42,7 +42,7 @@ client.on('shardError', (error) => {
 });
 
 // Log in the Discord client with the bot token 
-client.login(process.env.DISCORD_TOKEN as string);
+client.login("MTI1NzIxNjU0NDQzODYxNjExNg.GecxfX.mw3Aws2BFaC-ZPwpVA9j5hT3vXUDDLKEnBefh4" as string);
 
 
 
