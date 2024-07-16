@@ -40,13 +40,16 @@ export interface IUser extends Document {
   quest: string[];
   tasks: string[];
   community: string[];
-  rewards: string[];
+  rewards: {
+    xp: number;
+    coins: number;
+  };
   completedTasks: string[];
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
   teleInfo?:ITeleInfo;
 }
-
+ 
 // Create the User schema
 const userSchema: Schema = new mongoose.Schema(
   {
@@ -64,7 +67,10 @@ const userSchema: Schema = new mongoose.Schema(
     tasks: [ { type: Schema.Types.ObjectId, ref: "TaskOrPoll" } ],
     completedTasks: [ { type: mongoose.Schema.Types.ObjectId, ref: 'TaskOrPoll' } ],
     community: [ { type: Schema.Types.ObjectId, ref: "Community" } ],
-    rewards: [ { type: Schema.Types.ObjectId, ref: "Reward" } ],
+    rewards: {
+      xp: { type: Number, default: 0 },
+      coins: { type: Number, default: 0 }
+    },
     twitterInfo: {
       twitterId: { type: String },
       username: { type: String },
