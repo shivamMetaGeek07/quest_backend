@@ -41,7 +41,7 @@ client.on('shardError', (error) => {
   console.error('WebSocket connection error:', error);
 });
 
-// Log in the Discord client with the bot token ere
+// Log in the Discord client with the bot token 
 client.login(process.env.DISCORD_TOKEN as string);
 
 
