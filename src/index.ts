@@ -65,8 +65,6 @@ app.use('/admin', adminRoutes);
 app.use('/aws',s3routes);
 
 
-
-
 app.post('/auth/telegram/callback', (req, res) => {
   const { hash, ...user } = req.body as { [key: string]: string };
   const dataCheckString = Object.keys(user)
