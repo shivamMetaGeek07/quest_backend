@@ -33,9 +33,7 @@ const SECRET_KEY = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest
 app.use(
   cors({
     origin: process.env.PUBLIC_CLIENT_URL,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
-    optionsSuccessStatus: 200,
   })
 );
 
