@@ -145,8 +145,8 @@ passport.use(
 // Discord OAUth Authentication
 
 const scopes = ['identify', 'email', 'guilds', 'guilds.join'];
-  console.log("first",process.env.DISCORD_ID)
-  console.log("second",process.env.DISCORD_SECRET_KEY)
+  // console.log("first",process.env.DISCORD_ID)
+  // console.log("second",process.env.DISCORD_SECRET_KEY)
 passport.use(
   new DiscordStrategy(
     {
