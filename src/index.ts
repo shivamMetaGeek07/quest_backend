@@ -16,11 +16,11 @@ import s3routes from "./routes/s3routes";
 import taskRouter from "./routes/task/task.route";
 // import crypto from 'crypto';
 import userRouter from "./routes/user/user";
-
+import morgan from "morgan";
 dotenv.config();
 const app: Express = express();
 app.use( express.json() );
-
+app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());  
 app.use(bodyParser.urlencoded({ extended: true }));
