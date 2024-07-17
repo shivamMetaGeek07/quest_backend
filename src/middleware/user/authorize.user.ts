@@ -10,7 +10,7 @@ export const isAuthenticated = async (
   if (req.isAuthenticated()) {
     
     // If user is authenticated via Passport.js
-    
+   
     const users = req.user as IUser;
     const userId = users._id;
     const role = users.role; 
