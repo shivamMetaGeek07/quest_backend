@@ -8,9 +8,9 @@ export const CommunityController = {
     // create a community
     createCommunity: async ( req: Request, res: Response ): Promise<void> =>
     {
+        cl
          try
         {
-            
             const creator = req.body.creator;
 
             const newCommunity: Community = await CommunityModel.create( req.body );
