@@ -5,6 +5,7 @@ import UserDb, { IUser } from "../../models/user/user";
 import KolsDB from "../../models/kols/kols";
 import { ReferralDb} from "../../models/other models/models";
 import CommunityModel from "../../models/community/community.model";
+import mongoose from "mongoose";
 
 const generateReferralCode = async (randomLength: number) => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -115,7 +116,7 @@ export const taskController = {
             if ( quest )
             {
                 creatorUser?.task?.push( new_task._id );
-                user?.completedTasks?.push( new_task._id );
+                user?.tasks?.push( new mongoose.Types.ObjectId(new_task._id) );
                 quest?.tasks?.push( new_task._id );
                 await quest?.save();
                 await creatorUser?.save();
