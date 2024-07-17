@@ -71,7 +71,7 @@ passport.use(
 GoogleStrategy.prototype.authorizationParams = function () {
   return {
     access_type: "offline",
-    // prompt: "consent",
+    prompt: "consent",
   };
 };
 
@@ -145,8 +145,7 @@ passport.use(
 // Discord OAUth Authentication
 
 const scopes = ['identify', 'email', 'guilds', 'guilds.join'];
-  console.log("first",process.env.DISCORD_ID)
-  console.log("first",process.env.DISCORD_SECRET_KEY)
+ 
 passport.use(
   new DiscordStrategy(
     {
