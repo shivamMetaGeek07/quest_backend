@@ -12,7 +12,7 @@ import dotenv from "dotenv";
 import UserDb, { IUser } from "../models/user/user";
 import { Request } from "express";
 import KolsDB from "../models/kols/kols";
-import { fetchGuilds } from "../controllers/User/discord.js";
+import { fetchGuilds } from "../controllers/user/discord";
 
 dotenv.config();
 
@@ -67,7 +67,7 @@ passport.use(
 );
 
 // To show google acces page every time
-
+ 
 GoogleStrategy.prototype.authorizationParams = function () {
   return {
     access_type: "offline",
@@ -145,11 +145,12 @@ passport.use(
 // Discord OAUth Authentication
 
 const scopes = ['identify', 'email', 'guilds', 'guilds.join'];
-
+  console.log("first",process.env.DISCORD_ID)
+  console.log("second",process.env.DISCORD_SECRET_KEY)
 passport.use(
   new DiscordStrategy(
     {
-      clientID: process.env.DISCORD_ID!,
+      clientID: process.env.DISCORD_ID!, 
       clientSecret: process.env.DISCORD_SECRET_KEY!,
       callbackURL: `${process.env.PUBLIC_SERVER_URL}/auth/discord/callback`,
       scope: ['identify', 'email', 'guilds', 'guilds.join'],
