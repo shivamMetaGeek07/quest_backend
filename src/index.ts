@@ -39,9 +39,15 @@ app.use(
   session({
     secret: "sswnsnnjdsdfgd",
     resave: false,
+    // saveUninitialized: true,
     saveUninitialized: true,
-  })
-);
+    cookie: {
+      secure: true, // Set to true if your site is served over HTTPS
+      httpOnly: true,
+      sameSite: 'none', // This is important for cross-site requests
+    },
+  }));
+
 
 app.use( '/feed', feedRouter );
 
