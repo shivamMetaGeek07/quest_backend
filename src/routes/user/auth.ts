@@ -58,7 +58,6 @@ authrouter.get(
 
 authrouter.get(
   "/twitter",
-  isAuthenticated,
   TwitterConnected,
   passport.authenticate("twitter")
 );
@@ -75,7 +74,6 @@ authrouter.get(
 
 authrouter.get(
   "/discord",
-  isAuthenticated,
   DiscordConnected,
   passport.authenticate("discord")
 );
@@ -151,17 +149,16 @@ authrouter.get("/login/success", loginSuccess);
 
 authrouter.get("/login/failed", loginFailed);
 
-// Get User And Kol info
+// Get User And Kol info  
 
-authrouter.get("/profile",isAuthenticated, async (req, res) => {
+authrouter.get("/profile", async (req, res) => {
   const user = req.user as any;
   let data;
   if (user.role === 'kol') {
     data = await KolsDB.findById(user._id);
-  } else {
-    data = await UserDb.findById(user._id);
+  } else { 
+    data = await UserDb.findById(user._id); 
   }
-
   if (!data) {
     return res.status(201).json({success:false, message: "User not found. Please login" });
   }
@@ -170,10 +167,10 @@ authrouter.get("/profile",isAuthenticated, async (req, res) => {
 
 // update profile user and Kol
 
-authrouter.put("/profile/update",isAuthenticated, updateUser );
+authrouter.put("/profile/update", updateUser );
 
 // logout client
-authrouter.get("/logout",isAuthenticated, logout);
+authrouter.get("/logout",logout);
 
 
 // fetch guiild channel  (DISORD)
