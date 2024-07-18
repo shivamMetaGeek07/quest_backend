@@ -1,10 +1,10 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import passport from "../../utils/passport";
-import { checkIfUserFollows, loginFailed, loginSuccess, logout, updateUser } from "../../controllers/user/auth";
+import { checkIfUserFollows, loginFailed, loginSuccess, logout, updateUser } from "../../controllers/temp/auth";
 import { isAuthenticated } from "../../middleware/user/authorize.user";
 import { TwitterConnected } from "../../middleware/user/twitter";
-import { checkGuilds, checkInviteLink, fetchGuildChannelInfo, sendNotification } from "../../controllers/user/discord";
+import { checkGuilds, checkInviteLink, fetchGuildChannelInfo, sendNotification } from "../../controllers/temp/discord";
 import UserDb, { IUser } from "../../models/user/user";
 import { DiscordConnected } from "../../middleware/user/discord";
 import KolsDB from "../../models/kols/kols";
