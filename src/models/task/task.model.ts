@@ -15,41 +15,31 @@ export interface ITaskBase extends Document {
   }>;
 } 
 
-interface IQuiz {
-  question: string;
-  options: string[];
-  correctAnswer: string;
-}
-
-interface IPoll {
-  question: string;
-  options: string[];
-}
 
 // Combined type for all task types
 export type TaskOrPoll = ITaskBase & {
   _id: string;
   visitLink?: string;
   visitor?: mongoose.Types.ObjectId[];
-  quizzes?: IQuiz[];
-  polls?: IPoll[];
+  question?: string;
+  options?: string[];
   correctAnswer?: string;
   inviteLink?: string;
   invitee?: mongoose.Types.ObjectId[];
   uploadLink?: string;
   response?: string | number;
-  taskName?: string;
-  taskDescription: string;
 };
-
 
 const TaskSchema: Schema = new mongoose.Schema(
   {
     type: {
       type: String,
+      // required: true,
+      // enum: ['visit', 'poll', 'quiz', 'invite', 'upload']
     },
     category: {
       type: String,
+      // required: true,
       enum: ['Actions', 'Answers', 'Social', 'On-chain action']
     },
     questId: {
@@ -62,30 +52,17 @@ const TaskSchema: Schema = new mongoose.Schema(
       required: true,
       ref: 'Kol' 
     },
-    taskName: {
-      type: String,
-    },
-    taskDescription: {
-      type: String,
-    },
-    
     
     // Optional fields based on task type
     visitLink: { type: String },
     visitor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    quizzes: [{
-      question: { type: String },
-      options: [{ type: String }],
-      correctAnswer: { type: String }
-    }],
-    polls: [{
-      question: { type: String },
-      options: [{ type: String }]
-    }],
+    question: { type: String },
+    options: [{ type: String }],
+    correctAnswer: { type: String },
     inviteLink: { type: String },
     invitee: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     uploadLink: { type: String },
-    response: { type: mongoose.Schema.Types.Mixed },
+    response: { type: String || Number },
 
     completions: [{
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

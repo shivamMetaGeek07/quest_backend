@@ -5,6 +5,8 @@ import {
   IStrategyOptionWithRequest,
   Profile as TwitterProfile,
 } from "passport-twitter";
+// import  TelegramStrategy, { TelegramProfile }  from 'passport-telegram-official';
+// import {} from "passport-telegram";
 import { Strategy as DiscordStrategy, Profile as DiscordProfile } from "passport-discord";
 import dotenv from "dotenv";
 import UserDb, { IUser } from "../models/user/user";
@@ -65,11 +67,11 @@ passport.use(
 );
 
 // To show google acces page every time
-
+ 
 GoogleStrategy.prototype.authorizationParams = function () {
   return {
     access_type: "offline",
-    // prompt: "consent",
+    prompt: "consent",
   };
 };
 
@@ -143,11 +145,12 @@ passport.use(
 // Discord OAUth Authentication
 
 const scopes = ['identify', 'email', 'guilds', 'guilds.join'];
-
+  // console.log("first",process.env.DISCORD_ID)
+  // console.log("second",process.env.DISCORD_SECRET_KEY)
 passport.use(
   new DiscordStrategy(
     {
-      clientID: process.env.DISCORD_ID!,
+      clientID: process.env.DISCORD_ID!, 
       clientSecret: process.env.DISCORD_SECRET_KEY!,
       callbackURL: `${process.env.PUBLIC_SERVER_URL}/auth/discord/callback`,
       scope: ['identify', 'email', 'guilds', 'guilds.join'],
@@ -208,8 +211,45 @@ passport.use(
     }
   )
 );
-;
 
+// Telegram Authentication   
+// passport.use(
+//   new TelegramStrategy(
+//     {
+//       botToken: "7242549217:AAECE1Do2WkQ2j6r6LwlKbp-dQlG4XzHVqU",
+//       callbackURL: `${process.env.PUBLIC_SERVER_URL}/auth/telegram/callback`, 
+//       passReqToCallback: true,
+//       // Corrected callback URL
+//     },
+//     async (req:Request,profile: TelegramProfile, done: (error: any, user?: any) => void) => {
+//       try {
+//         const users = req.user as IUser; // Get the currently logged-in user 
+        
+//         let user = await UserDb.findById(users._id);  // Find the user in the database
+        
+//         if (user) {
+//           // Update or set Telegram information in the user record
+//           user.teleInfo = {
+//             telegramId: profile.id,
+//             teleName: profile.displayName,
+//             teleusername: profile.username,
+//           };
+//           await user.save(); // Save the updated user record
+//           return done(null, user); // Pass the user object to the done callback
+//         } else {
+//           // Handle the case where the user is not found
+//           return done(new Error('User not found'), null);
+//         }
+//       } catch (error) {
+//         console.error('Error during Telegram authentication:', error);
+//         return done(error);
+//       }
+//     }
+//   )
+// );
+
+
+// passport.use(new Tele)
 
 passport.serializeUser((user: any, done) => {
   done(null, user);
@@ -223,5 +263,5 @@ passport.deserializeUser(async (id: string, done) => {
     done(error, null);
   }
 });
-
+ 
 export default passport;

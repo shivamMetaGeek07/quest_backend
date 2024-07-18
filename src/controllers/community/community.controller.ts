@@ -239,7 +239,6 @@ export const CommunityController = {
         {
             const communityId = req.params.id;
             const memberId = req.body.memberId;
-
             if ( !communityId || !memberId )
             {
                 res.status( 400 ).json( { message: 'Invalid community ID or member ID' } );
