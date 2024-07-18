@@ -71,7 +71,7 @@ passport.use(
 GoogleStrategy.prototype.authorizationParams = function () {
   return {
     access_type: "offline",
-    prompt: "consent",
+    // prompt: "consent",
   };
 };
 

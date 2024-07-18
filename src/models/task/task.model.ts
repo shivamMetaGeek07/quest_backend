@@ -16,10 +16,14 @@ export interface ITaskBase extends Document {
 } 
 
 
+
 // Combined type for all task types
 export type TaskOrPoll = ITaskBase & {
   _id: string;
   visitLink?: string;
+  discord?:string;
+  discordLink?:string
+  guild?:string;
   visitor?: mongoose.Types.ObjectId[];
   question?: string;
   options?: string[];
@@ -52,9 +56,11 @@ const TaskSchema: Schema = new mongoose.Schema(
       required: true,
       ref: 'Kol' 
     },
-    
     // Optional fields based on task type
     visitLink: { type: String },
+    discord:{type:String},
+    guild:{type:String},
+    discordLink:{type:String},
     visitor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     question: { type: String },
     options: [{ type: String }],
