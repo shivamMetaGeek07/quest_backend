@@ -1,5 +1,5 @@
 import express,{Response, Request} from 'express';
-import { getUserById,followUser,unfollowUser, getAllUser } from '../../controllers/temp/user'
+import { getUserById,followUser,unfollowUser, getAllUser } from '../../controllers/user/user'
 import  getUsersByCoinsOrder  from '../../controllers/leaderboard/leaderboard';
 const userRouter = express.Router();
 
