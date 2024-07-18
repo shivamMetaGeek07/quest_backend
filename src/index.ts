@@ -32,8 +32,8 @@ console.log(TELEGRAM_BOT_TOKEN)
 
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET","POST","PUT","DELETE","PATCH"],
+    origin: process.env.PUBLIC_CLIENT_URL,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
     optionsSuccessStatus: 200,
   })
