@@ -14,7 +14,6 @@ import Bottleneck from "bottleneck";
 import adminRoutes from './routes/admin/admin';
 import s3routes from "./routes/s3routes";
 import taskRouter from "./routes/task/task.route";
-import crypto from 'crypto';
 import userRouter from "./routes/user/user";
 import morgan from "morgan";
 dotenv.config();
@@ -26,9 +25,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const port = process.env.PORT || 8080;
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
-console.log(TELEGRAM_BOT_TOKEN)
-const SECRET_KEY = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
+
 
 app.use(
   cors({
@@ -64,24 +61,6 @@ app.use('/admin', adminRoutes);
 app.use('/aws',s3routes);
 
 
-app.post('/auth/telegram/callback', (req, res) => {
-  const { hash, ...user } = req.body as { [key: string]: string };
-  const dataCheckString = Object.keys(user)
-    .sort()
-    .map(key => `${key}=${user[key]}`)
-    .join('\n');
-  const hmac = crypto.createHmac('sha256', SECRET_KEY).update(dataCheckString).digest('hex');
-
-  if (hmac !== hash) {
-    return res.status(403).send('Authentication failed: Invalid hash.');
-  }
-
-  // At this point, the user is authenticated
-  // You can save the user data to your database here
-
-  res.send(`Hello, ${user.first_name}! Your Telegram ID is ${user.id}`);
-});
- 
 
 // Example route
 app.get('/', (req: Request, res: Response) => {

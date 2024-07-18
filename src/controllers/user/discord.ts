@@ -165,14 +165,14 @@ export const checkInviteLink = async (inviteUrl: string) => {
       const inviteCode = extractInviteCode(inviteUrl);
       const inviteDetails = await fetchInviteDetails(inviteCode);
       const checkLink = await isBotInGuild(inviteDetails.guild_id);
-      
-      return checkLink;
+      const guilData=inviteDetails.guild_id;
+      return {checkLink,guilData};
     } catch (error) {
       console.error('Error checking invite link: ', error);
       throw error;
     }
   };
-
+ 
   // check user join the guild or not
 export const checkUserInChannel = async (channelId: string, userId: string) => {
     try {
