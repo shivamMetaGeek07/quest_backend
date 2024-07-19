@@ -2,24 +2,26 @@ import { Request, Response } from "express";
 import TaskModel, { TaskOrPoll } from "../../models/task/task.model";
 import QuestModel, { Quest } from "../../models/quest/quest.model";
 import UserDb, { IUser } from "../../models/user/user";
-import { ReferralDb} from "../../models/other models/models";
+import { ReferralDb } from "../../models/other models/models";
 import CommunityModel from "../../models/community/community.model";
 import mongoose from "mongoose";
 
-const generateReferralCode = async (randomLength: number) => {
+const generateReferralCode = async ( randomLength: number ) =>
+{
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let randomPart = '';
 
-    for (let i = 0; i < randomLength; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        randomPart += characters[randomIndex];
+    for ( let i = 0; i < randomLength; i++ )
+    {
+        const randomIndex = Math.floor( Math.random() * characters.length );
+        randomPart += characters[ randomIndex ];
     }
 
 
-    const finalReferralCode =  randomPart;
+    const finalReferralCode = randomPart;
 
     return finalReferralCode;
-}
+};
 
 
 export const taskController = {
@@ -37,7 +39,7 @@ export const taskController = {
             res.json( { message: err } );
         }
     },
-    
+
     // get task by quest id
     getTaskByQuestId: async ( req: Request, res: Response ): Promise<void> =>
     {
@@ -105,20 +107,19 @@ export const taskController = {
             const creator = req.body.creator;
 
             const userId = req.body.user;
-          
+
             const new_task: TaskOrPoll = await TaskModel.create( req.body );
 
             const user = await UserDb.findById( userId );
             const quest = await QuestModel.findById( questId );
-            const creatorUser = await UserDb.findById( creator );
+
             // console.log(quest)
             if ( quest )
             {
-                creatorUser?.task?.push( new_task._id );
-                user?.tasks?.push( new mongoose.Types.ObjectId(new_task._id) );
+                // creatorUser?.tasks?.push( new_task._id );
+                user?.createdTasks?.push( new mongoose.Types.ObjectId( new_task._id ) );
                 quest?.tasks?.push( new_task._id );
                 await quest?.save();
-                await creatorUser?.save();
                 await user?.save();
                 res.status( 200 ).json( { msg: "New Task has been created", new_task: new_task } );
             } else
@@ -146,13 +147,18 @@ export const taskController = {
                 return;
             }
 
+            if ( task.creator === userId )
+            {
+                res.status( 201 ).json( { message: "YOU HAVE CREATED THIS TASK" } );
+                return;
+            }
+
             const user = await UserDb.findById( userId );
             if ( !user )
             {
                 res.status( 404 ).json( { message: "User not found" } );
                 return;
             }
-
             // Check if the user has already completed this task
             const alreadyCompleted = task.completions?.some(
                 ( completion ) => completion.user.toString() === userId
@@ -170,7 +176,7 @@ export const taskController = {
             {
                 task.completions = [];
             }
-        
+
             task?.completions.push( { user: userId, completedAt: new Date(), submission: req.body.submission, userName: req.body.userName } );
 
             if ( req?.body?.visitLink )
@@ -201,66 +207,74 @@ export const taskController = {
     },
 
     // rewards claim
-   claimReward: async (req: Request, res: Response): Promise<any> => {
-  try {
-    const { userId, questId } = req.body;
+    claimReward: async ( req: Request, res: Response ): Promise<any> =>
+    {
+        try
+        {
+            const { userId, questId } = req.body;
 
-    const quest: Quest | null = await QuestModel.findById(questId);
-    const user: IUser | null = await UserDb.findById(userId);
+            const quest: Quest | null = await QuestModel.findById( questId );
+            const user: IUser | null = await UserDb.findById( userId );
 
-    if (!quest || !user) {
-      return res.status(404).json({
-        message: "Quest or user not found"
-      });
-    }
+            if ( !quest || !user )
+            {
+                return res.status( 404 ).json( {
+                    message: "Quest or user not found"
+                } );
+            }
 
-    // Check if the reward has already been claimed by the user
-    if (user.quest.includes(questId)) {
-      return res.status(200).json({
-        message: "Reward already claimed"
-      });
-    }
+            // Check if the reward has already been claimed by the user
+            if ( user.quest.includes( questId ) )
+            {
+                return res.status( 200 ).json( {
+                    message: "Reward already claimed"
+                } );
+            }
 
-    // Update user's rewards
-    quest.rewards.forEach(reward => {
-      if (reward.type === 'xp') {
-        user.rewards.xp += reward.value;
-      } else if (reward.type === 'coin') {
-        user.rewards.coins += reward.value;
-      }
-    });
+            // Update user's rewards
+            quest.rewards.forEach( reward =>
+            {
+                if ( reward.type === 'xp' )
+                {
+                    user.rewards.xp += reward.value;
+                } else if ( reward.type === 'coin' )
+                {
+                    user.rewards.coins += reward.value;
+                }
+            } );
 
-    // Add questId to user's quests
-    user.quest.push(questId);
+            // Add questId to user's quests
+            user.quest.push( questId );
 
-      if ( user.quest.length > 5 ){
-          user.badges?.push("MAXI")
-    } else if ( user.quest.length > 2 ) {
-            user.badges?.push("ENTHUSIAST")
-        } else {
-          user.badges?.push("NOOB")
-      }
-      
-    // Save the updated user
-    await user.save();
+            if ( user.quest.length > 5 )
+            {
+                user.badges?.push( "MAXI" );
+            } else if ( user.quest.length > 2 )
+            {
+                user.badges?.push( "ENTHUSIAST" );
+            } else
+            {
+                user.badges?.push( "NOOB" );
+            }
 
-    res.status(200).json({ 
-      message: "Reward claimed successfully",
-      updatedRewards: user.rewards
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error claiming reward", error });
-  }
-},
+            // Save the updated user
+            await user.save();
 
-
-
-    
+            res.status( 200 ).json( {
+                message: "Reward claimed successfully",
+                updatedRewards: user.rewards
+            } );
+        } catch ( error )
+        {
+            console.error( error );
+            res.status( 500 ).json( { message: "Error claiming reward", error } );
+        }
+    },
 
     // delete the task
-    deleteTask: async ( req:Request, res:Response ): Promise<void> =>{
-    
+    deleteTask: async ( req: Request, res: Response ): Promise<void> =>
+    {
+
         try
         {
             const taskId = req.params.taskId;
@@ -274,7 +288,7 @@ export const taskController = {
             {
                 res.status( 403 ).json( {
                     message: "You are not authorized to delete this task"
-                    } );
+                } );
             }
             else
             {
@@ -287,72 +301,77 @@ export const taskController = {
             res.status( 500 ).json( { message: "Error deleting task", error } );
         }
     },
-    
-   
 
-    referralGenerate : async (req: Request, res: Response): Promise<void> => {
-        const { userId ,questId,taskId,expireDate } = req.body;
-        console.log("first",req.body)
-        if (!userId) {
-            res.status(500).json({ message: "User Not Found Please Login" });
+
+
+    referralGenerate: async ( req: Request, res: Response ): Promise<void> =>
+    {
+        const { userId, questId, taskId, expireDate } = req.body;
+        console.log( "first", req.body );
+        if ( !userId )
+        {
+            res.status( 500 ).json( { message: "User Not Found Please Login" } );
             return;
         }
-        try {
+        try
+        {
             const randomLength = 10;
             let referral: string;
             let referralCheck: any;
-            const community = await CommunityModel.findOne({ quests: questId });
-            const communityInfo=community?._id
-            
+            const community = await CommunityModel.findOne( { quests: questId } );
+            const communityInfo = community?._id;
+
             // Generate and check the referral code until a unique one is found
-            do {
-                referral = await generateReferralCode(randomLength);
-                referralCheck = await ReferralDb.findOne({ referralCode: referral });
-            } while (referralCheck);
-            
+            do
+            {
+                referral = await generateReferralCode( randomLength );
+                referralCheck = await ReferralDb.findOne( { referralCode: referral } );
+            } while ( referralCheck );
+
             // Save the new referral code 
             const expiresAt = new Date();
-            expiresAt.setDate(expiresAt.getDate() + expireDate); // Set expiration date
+            expiresAt.setDate( expiresAt.getDate() + expireDate ); // Set expiration date
 
-        // Save the new referral code with the expiration date
-            const user = new ReferralDb({
-            referralCode: referral,
-            userInfo: userId,
-            questInfo:questId,
-            taskInfo: taskId,
-            communityInfo,
-            expiresAt
-            });
+            // Save the new referral code with the expiration date
+            const user = new ReferralDb( {
+                referralCode: referral,
+                userInfo: userId,
+                questInfo: questId,
+                taskInfo: taskId,
+                communityInfo,
+                expiresAt
+            } );
 
             await user.save();
 
-            console.log(referral);
-            res.status(201).send(referral);
+            console.log( referral );
+            res.status( 201 ).send( referral );
 
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Error generating referral code", error });
+        } catch ( error )
+        {
+            console.error( error );
+            res.status( 500 ).json( { message: "Error generating referral code", error } );
         }
     }
-    
-    
-    
-     
-     
-     
-     
-     
-     
-     
 
-     
-     
-     
+
+
+
+
+
+
+
+
+
+
+
+
+
     //  DON'T TOUCH BELOW CODE
-     
 
-     
-     // these are just for now, if not needed and we dont required i will remove them , please don't touch them
+
+
+    // these are just for now, if not needed and we dont required i will remove them , please don't touch them
     // // visit link task
     // visitLink: async ( req: Request, res: Response ) :Promise< void> =>
     // {
@@ -360,7 +379,7 @@ export const taskController = {
     //     try
     //     {
     //         const questId = req.body.creator;
-          
+
     //         const visit: TaskOrPoll = await TaskModel.create( req.body );
 
     //         const quest = await QuestModel.findById( questId );
@@ -468,9 +487,9 @@ export const taskController = {
     //         } );
     //     }
     // }
-    
-    
-    
 
-    
-}
+
+
+
+
+};

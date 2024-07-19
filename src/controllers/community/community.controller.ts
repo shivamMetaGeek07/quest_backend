@@ -11,11 +11,12 @@ export const CommunityController = {
         {
             const creator = req.body.creator;
             const newCommunity: Community = await CommunityModel.create( req.body );
-            const creatorUser = await UserDb.findById( creator );
-            // console.log(quest)
+            const creatorUser = await UserDb.findById( creator );       
+            //  console.log(quest) 
+             
             if ( newCommunity )
             {
-                creatorUser?.community?.push( newCommunity?._id);
+                creatorUser?.createdCommunities?.push( newCommunity?._id);
                 await creatorUser?.save();
             res.status( 201 ).json( { newCommunity: newCommunity, msg: "Community Created Successfully" } );
             }else{
@@ -194,34 +195,6 @@ export const CommunityController = {
         {
             res.status( 400 ).json( {
                 message: 'Failed to fetch the community by category', error
-            } );
-        }
-    },
-
-    // Add quest to a community
-    addQuestToCommunity: async ( req: Request, res: Response ): Promise<void> =>
-    {
-        try
-        {
-            const updatedCommunity: Community | null = await CommunityModel.findByIdAndUpdate(
-                req.params.id,
-                {
-                    $push: { quests: req.body.questId }
-                },
-                { new: true }
-            );
-
-            if ( !updatedCommunity )
-            {
-                res.status( 400 ).json( { message: 'Community not found' } );
-            }
-
-            res.status( 200 ).json( { "msg": "quest created successfully", updatedCommunity } );
-        } catch ( error )
-        {
-            res.status( 400 ).json( {
-                message: 'Failed to add quest to community',
-                error
             } );
         }
     },

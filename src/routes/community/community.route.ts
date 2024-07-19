@@ -34,9 +34,6 @@ communityRoute.get( '/ecosystem/:ecosystem', CommunityController.getCommunitiesB
 // get community by category
 communityRoute.get( '/category/:category', CommunityController.getCommunitiesByCategory );
 
-// add the quest to community
-communityRoute.post( '/:id', CommunityController.addQuestToCommunity );
-
 // join community
 communityRoute.post( '/joincommunity/:id', CommunityController.joinCommunity );
 
