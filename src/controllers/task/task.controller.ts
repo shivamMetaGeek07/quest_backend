@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import TaskModel, { TaskOrPoll } from "../../models/task/task.model";
 import QuestModel, { Quest } from "../../models/quest/quest.model";
 import UserDb, { IUser } from "../../models/user/user";
-import KolsDB from "../../models/kols/kols";
 import { ReferralDb} from "../../models/other models/models";
 import CommunityModel from "../../models/community/community.model";
 import mongoose from "mongoose";
@@ -111,7 +110,7 @@ export const taskController = {
 
             const user = await UserDb.findById( userId );
             const quest = await QuestModel.findById( questId );
-            const creatorUser = await KolsDB.findById( creator );
+            const creatorUser = await UserDb.findById( creator );
             // console.log(quest)
             if ( quest )
             {

@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import CommunityModel, { Community } from '../../models/community/community.model';
 import UserDb from '../../models/user/user';
-import KolsDB from '../../models/kols/kols';
 
 export const CommunityController = {
 
@@ -10,23 +9,18 @@ export const CommunityController = {
     {
          try
         {
-            
             const creator = req.body.creator;
-
             const newCommunity: Community = await CommunityModel.create( req.body );
-
-            const creatorUser = await KolsDB.findById( creator );
+            const creatorUser = await UserDb.findById( creator );
             // console.log(quest)
             if ( newCommunity )
             {
                 creatorUser?.community?.push( newCommunity?._id);
                 await creatorUser?.save();
             res.status( 201 ).json( { newCommunity: newCommunity, msg: "Community Created Successfully" } );
-               
             }else{
                 res.status( 400 ).json( { message: "Error in creating the quest" } );
              }
-        
         } catch ( error )
         {
             res.status( 400 ).json( { message: 'Failed to create the Community', error } );

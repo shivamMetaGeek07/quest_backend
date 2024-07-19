@@ -34,13 +34,9 @@ const TaskSchema: Schema = new mongoose.Schema(
   {
     type: {
       type: String,
-      // required: true,
-      // enum: ['visit', 'poll', 'quiz', 'invite', 'upload']
     },
     category: {
       type: String,
-      // required: true,
-      enum: ['Actions', 'Answers', 'Social', 'On-chain action']
     },
     questId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -50,7 +46,7 @@ const TaskSchema: Schema = new mongoose.Schema(
     creator: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'Kol' 
+      ref: 'user' 
     },
     
     // Optional fields based on task type
