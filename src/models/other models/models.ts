@@ -29,10 +29,14 @@ const Badge = mongoose.model<IBadge>('Badge', BadgeSchema);
 } 
 const ReferralSchema:Schema=new mongoose.Schema({
   referralCode:{type:String ,unique:true,required:true},
-  userInfo:{type:String,required:true},
-  questInfo:{type:String,required:true},
-  communityInfo:{type:String,required:true},
-  taskInfo:{type:String,required:true},
+  userInfo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+     required: true
+  },
+  questInfo:{type:mongoose.Schema.Types.ObjectId, ref:'Quest',required:true},
+  communityInfo:{type:mongoose.Schema.Types.ObjectId, ref:'Community',required:true},
+  taskInfo:{type:mongoose.Schema.Types.ObjectId, ref:'Task' ,required:true},
   expiresAt: { type: Date, required: true, index: { expires: '0s' } } 
 },{timestamps:true});
 const ReferralDb:Model<IReferral>= mongoose.model<IReferral>("Referral",ReferralSchema);
