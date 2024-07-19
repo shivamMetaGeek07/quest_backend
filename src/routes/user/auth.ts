@@ -110,9 +110,8 @@ authrouter.get("/login/failed", loginFailed);
 
 // Get User And Kol info
 
-authrouter.get("/profile", isAuthenticated, async (req, res) => {
+authrouter.get("/profile",isAuthenticated, async (req, res) => {
   const user = req.user as any;
-  
   let data;
   if (user.role === 'kol') {
     data = await KolsDB.findById(user._id);
