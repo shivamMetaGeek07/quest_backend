@@ -92,8 +92,7 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
     if(!user){
       user=new UserDb({
         phone_number:decodedToken.phone_number,
-        displayName:name,
-        image:users.img
+        displayName:name
       });
 
       await user.save();
