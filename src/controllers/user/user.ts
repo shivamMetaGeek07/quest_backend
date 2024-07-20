@@ -22,15 +22,14 @@ const getFriendsByIds = async ( req: Request, res: Response ): Promise<void> =>
   try
   {
     const friendsId = req.body.friendsIds;
-        
+        // console.log(friendsId)
     if ( !Array.isArray( friendsId ) )
     {
       res.status( 400 ).json( { message: 'Invalid input: friendsId must be an array' } );
       return;
     }
-
     const friends = await User.find( { _id: { $in: friendsId } } );
-        
+      
     res.status( 200 ).json( {
       message: "friendsId fetched successfully",
       friends
@@ -74,7 +73,7 @@ const followUser = async (req: Request, res: Response) => {
 
 const unfollowUser = async (req: Request, res: Response) => {
   const { userId, unfollowId } = req.body;
-  console.log(userId, unfollowId);
+  // console.log(userId, unfollowId);
   try {
     const user = await User.findById(userId);
     const unfollowUser = await User.findById(unfollowId);
@@ -102,10 +101,9 @@ const unfollowUser = async (req: Request, res: Response) => {
 
 const getAllUser = async ( req: Request, res: Response ) =>
 {
-  console.log("THis is get all users funcion")
   try {
     const users: any = await User.find();
-    console.log(users);
+    // console.log(users);
     res.status(200).json(users);
   } catch ( err ) 
   {

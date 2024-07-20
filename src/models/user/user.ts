@@ -54,9 +54,12 @@ export interface IUser extends Document {
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
   teleInfo?: ITeleInfo;
-  tasks?: mongoose.Types.ObjectId[]; // Add this line
   followers: string[];
   following: string[];
+  createdCommunities: mongoose.Types.ObjectId[];
+  createdQuests: mongoose.Types.ObjectId[];
+  createdTasks: mongoose.Types.ObjectId[];
+  
 }
 
 // Create the User schema
@@ -102,8 +105,11 @@ const userSchema: Schema = new mongoose.Schema(
       teleusername: { type: String },
     },
     followers: [{ type: String, default: [] }],
-    following: [{ type: String, default: [] }],
-    tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }] // 
+    following: [ { type: String, default: [] } ],
+    
+    createdTasks: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Task' } ],
+    createdQuests: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Quest' } ],
+    createdCommunities: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Community' }],
   },
   { timestamps: true }
 );

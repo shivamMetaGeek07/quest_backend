@@ -2,11 +2,14 @@ import { Request, Response } from 'express';
 import CommunityData from '../../models/admin/communityData';
 
 // Controller to get community details
-export const getCommunityData = async (req: Request, res: Response) => {
-  try {
+export const getCommunityData = async ( req: Request, res: Response ) =>
+{
+  try
+  {
     const community = await CommunityData.findOne();
-    if (!community) {
-      return res.status(404).json({ message: 'Community not found' });
+    if ( !community )
+    {
+      return res.status( 404 ).json( { message: 'Community not found' } );
     }
     res.status(200).json({community,message:'Community meta data fetched successfully' });
   } catch (error) {
@@ -81,8 +84,8 @@ export const updateById = async (req: Request, res: Response) => {
 
 // Delete category or ecosystem by id
 export const deleteById = async (req: Request, res: Response) => {
+  const {type ,id}=req.params 
   try {
-    const { id, type } = req.params;
 
     const communityData = await CommunityData.findOne();
     if (!communityData) {
