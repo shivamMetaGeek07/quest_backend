@@ -87,12 +87,15 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
       let user;
     if (decodedToken) {
     // Generate JWT token
-     user=await UserDb.findOne({phone_number:decodedToken.phone_number,displayName:users.img});
+     user=await UserDb.findOne({phone_number:decodedToken.phone_number});
+     
     if(!user){
       user=new UserDb({
         phone_number:decodedToken.phone_number,
-        displayName:name
+        displayName:name,
+        image:users.img
       });
+
       await user.save();
     }
     const jwtToken = generateToken({
