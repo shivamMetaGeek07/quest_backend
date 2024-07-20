@@ -43,15 +43,10 @@ export const loginFailed = async (
 export const logout = (req: Request, res: Response) => {
   req.logout((err) => {
     if (err) {
-      return res.status(500).json({ message: "Error logging out" });
+      return res.status(500).json({ message: 'Error logging out' });
     }
-    req.session.destroy((sessionErr) => {
-      if (sessionErr) {
-        return res.status(500).json({ message: "Error destroying session" });
-      }
-      res.clearCookie('connect.sid');
-      return res.status(200).json({ message: "Logged out successfully" });
-    });
+    res.clearCookie('authToken');
+    return res.status(200).json({ message: 'Logged out successfully' });
   });
 };
 // consumer_key: process.env.Twitter_Key!,
@@ -111,19 +106,23 @@ export const checkIfUserFollows = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-  const users = req.user as IUser;
-  const role = users.role;
+  const user = req.user as any;
   const { bgImage, bio, nickname, image } = req.body;  // Extract the fields from the request body
   try {
-    let user;
 
     // Check the role and find the appropriate user document
-    if (role === 'user') {
-      user = await UserDb.findById(users._id);  // Find the user from UserDb
-      
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
+    let data;
+    if (!user) {
+      return res.status(201).json({success:false, message: "Invlid request" });
+
+    }
+    if (!data) {
+      return res.status(201).json({success:false, message: "User not found. Please login" });
+
+    }
+
+     data = await UserDb.findById(user.ids);
+
 
       // Update user fields
       user.bgImage = bgImage || user.bgImage;  // Update only if provided
@@ -133,25 +132,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
       await user.save();  // Save the updated user document
       return res.status(200).json({ message: 'User updated successfully', user });
-      
-    } else if (role === 'kol') {
-      user = await KolsDB.findById(users._id);  // Find the kol from KolsDB
-      
-      if (!user) {
-        return res.status(404).json({ error: 'KOL not found' });
-      }
-
-      // Update kol fields
-      user.bgImage = bgImage || user.bgImage;  // Update only if provided
-      user.bio = bio || user.bio;
-      user.nickname = nickname || user.nickname;
-      user.image = image || user.image;
-
-      await user.save();  // Save the updated kol document
-      return res.status(200).json({ user });
-    } else {
-      return res.status(400).json({ error: 'Invalid role' });  // Handle invalid roles
-    }
+             // Save the updated kol document
   } catch (error) {
     console.error('Error updating user or KOL:', error);
     return res.status(500).json({ error: 'An error occurred while updating user or KOL' });

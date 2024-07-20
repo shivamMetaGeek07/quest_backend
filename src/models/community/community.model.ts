@@ -11,6 +11,7 @@ export interface Community
     category: string[];
     quests?: string[];
     members?: string[];
+    creator?: mongoose.Types.ObjectId;
 }
 
 const CommunitySchema: Schema = new mongoose.Schema<Community>( {
@@ -21,7 +22,8 @@ const CommunitySchema: Schema = new mongoose.Schema<Community>( {
     ecosystem: [ { type: String, required: true } ],
     category: [ { type: String, required: true } ],
     quests: [ { type: Schema.Types.ObjectId, ref: 'Quest' } ],
-    members: [ { type: Schema.Types.ObjectId, ref: 'User' } ]
+    members: [ { type: Schema.Types.ObjectId, ref: 'User' } ],
+    creator: { type: Schema.Types.ObjectId, ref: 'User' }
 
 }, {
     timestamps: true

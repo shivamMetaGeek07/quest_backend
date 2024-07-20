@@ -1,4 +1,10 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
+
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET_Token=process.env.JWT_SECRET as string;
 
 // Define interfaces for the sub-schemas
 export interface ITwitterInfo {
@@ -26,7 +32,8 @@ export interface IDiscordInfo {
 
 // Define an interface for the User schema
 export interface IUser extends Document {
-  googleId: string;
+  phone_number: string;
+  googleId:string;
   displayName: string;
   email: string;
   bio: string;
@@ -47,18 +54,22 @@ export interface IUser extends Document {
   twitterInfo?: ITwitterInfo;
   discordInfo?: IDiscordInfo;
   teleInfo?: ITeleInfo;
-  tasks?: mongoose.Types.ObjectId[]; // Add this line
   followers: string[];
   following: string[];
+  createdCommunities: mongoose.Types.ObjectId[];
+  createdQuests: mongoose.Types.ObjectId[];
+  createdTasks: mongoose.Types.ObjectId[];
+  
 }
 
 // Create the User schema
 const userSchema: Schema = new mongoose.Schema(
   {
-    googleId: { type: String, required: true },
-    displayName: { type: String, required: true },
-    email: { type: String, required: true },
-    image: { type: String, required: true },
+    phone_number: { type: String, required: true },
+    googleId:{ type: String },
+    displayName: { type: String },
+    email: { type: String },
+    image: { type: String },
     bio: { type: String },
     bgImage: { type: String },
     nickname: { type: String },
@@ -94,8 +105,11 @@ const userSchema: Schema = new mongoose.Schema(
       teleusername: { type: String },
     },
     followers: [{ type: String, default: [] }],
-    following: [{ type: String, default: [] }],
-    tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }] // 
+    following: [ { type: String, default: [] } ],
+    
+    createdTasks: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Task' } ],
+    createdQuests: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Quest' } ],
+    createdCommunities: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Community' }],
   },
   { timestamps: true }
 );
@@ -104,3 +118,8 @@ const userSchema: Schema = new mongoose.Schema(
 const UserDb: Model<IUser> = mongoose.model<IUser>("User", userSchema);
 
 export default UserDb;
+
+export const generateToken=({ids,phone_number}:{ids:string,phone_number:string})=>{
+  const jwtToken = jwt.sign({ ids, phone_number }, JWT_SECRET_Token, { expiresIn: '24h' });
+  return jwtToken;
+}

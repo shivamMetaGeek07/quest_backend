@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import CommunityModel, { Community } from '../../models/community/community.model';
 import UserDb from '../../models/user/user';
-import KolsDB from '../../models/kols/kols';
 
 export const CommunityController = {
 
@@ -10,23 +9,19 @@ export const CommunityController = {
     {
          try
         {
-            
             const creator = req.body.creator;
-
             const newCommunity: Community = await CommunityModel.create( req.body );
-
-            const creatorUser = await KolsDB.findById( creator );
-            // console.log(quest)
+            const creatorUser = await UserDb.findById( creator );       
+            //  console.log(quest) 
+             
             if ( newCommunity )
             {
-                creatorUser?.community?.push( newCommunity?._id);
+                creatorUser?.createdCommunities?.push( newCommunity?._id);
                 await creatorUser?.save();
             res.status( 201 ).json( { newCommunity: newCommunity, msg: "Community Created Successfully" } );
-               
             }else{
                 res.status( 400 ).json( { message: "Error in creating the quest" } );
              }
-        
         } catch ( error )
         {
             res.status( 400 ).json( { message: 'Failed to create the Community', error } );
@@ -174,9 +169,17 @@ export const CommunityController = {
     {
         try
         {
-            const communities: Community[] = await CommunityModel.find( {
-                ecosystem: req.params.ecosystem
-            } );
+            let communities: Community[] = []
+            if ( req.params.ecosystem )
+            {
+                 communities = await CommunityModel.find( {
+                    ecosystem: req.params.ecosystem
+                } );
+                
+            } else
+            {
+                 communities = await CommunityModel.find();
+            }
             res.status( 200 ).json( communities );
         } catch ( error )
         {
@@ -192,42 +195,21 @@ export const CommunityController = {
     {
         try
         {
-            const communities: Community[] = await CommunityModel.find( {
-                category: req.params.category
-            } );
+            let communities: Community[] = []
+            if ( req.params.category )
+            {
+                communities = await CommunityModel.find( {
+                    category: req.params.category
+                } );
+            } else
+            {
+                communities = await CommunityModel.find();
+            }
             res.status( 200 ).json( communities );
         } catch ( error )
         {
             res.status( 400 ).json( {
                 message: 'Failed to fetch the community by category', error
-            } );
-        }
-    },
-
-    // Add quest to a community
-    addQuestToCommunity: async ( req: Request, res: Response ): Promise<void> =>
-    {
-        try
-        {
-            const updatedCommunity: Community | null = await CommunityModel.findByIdAndUpdate(
-                req.params.id,
-                {
-                    $push: { quests: req.body.questId }
-                },
-                { new: true }
-            );
-
-            if ( !updatedCommunity )
-            {
-                res.status( 400 ).json( { message: 'Community not found' } );
-            }
-
-            res.status( 200 ).json( { "msg": "quest created successfully", updatedCommunity } );
-        } catch ( error )
-        {
-            res.status( 400 ).json( {
-                message: 'Failed to add quest to community',
-                error
             } );
         }
     },
@@ -244,6 +226,15 @@ export const CommunityController = {
                 res.status( 400 ).json( { message: 'Invalid community ID or member ID' } );
                 return;
             }
+            const community = await CommunityModel.findById( communityId );
+           
+            if ( memberId == community?.creator )
+            {
+                res.status( 400 ).json( {
+                    message: 'You cannot join your own community'
+                } );
+                return;
+            }
 
             const updatedCommunity = await CommunityModel.findOneAndUpdate(
                 { _id: communityId, members: { $ne: memberId } },
@@ -251,7 +242,7 @@ export const CommunityController = {
                 { new: true, runValidators: true }
             );
 
-            console.log( updatedCommunity );
+            // console.log( updatedCommunity );
             if ( !updatedCommunity )
             {
                 res.status( 404 ).json( { message: 'Community not found or member already added' } );

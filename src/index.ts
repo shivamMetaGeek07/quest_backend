@@ -14,9 +14,10 @@ import Bottleneck from "bottleneck";
 import adminRoutes from './routes/admin/admin';
 import s3routes from "./routes/s3routes";
 import taskRouter from "./routes/task/task.route";
-// import crypto from 'crypto';
 import userRouter from "./routes/user/user";
 import morgan from "morgan";
+import {auth} from "./utils/fireAdmin"
+import UserDb, { generateToken } from "./models/user/user";
 dotenv.config();
 const app: Express = express();
 app.use( express.json() );
@@ -26,13 +27,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const port = process.env.PORT || 8080;
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
-console.log(TELEGRAM_BOT_TOKEN)
-// const SECRET_KEY = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
 
 app.use(
   cors({
     origin: process.env.PUBLIC_CLIENT_URL,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
   })
 );
@@ -43,9 +42,15 @@ app.use(
   session({
     secret: "sswnsnnjdsdfgd",
     resave: false,
-    saveUninitialized: true,
-  })
-);
+    // saveUninitialized: true,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production', // Set to true if your site is served over HTTPS
+      httpOnly: true,
+      sameSite: 'none', // This is important for cross-site requests
+    },
+  }));
+
 
 app.use( '/feed', feedRouter );
 
@@ -63,26 +68,55 @@ app.use('/kols', kolsRouter);
 app.use('/admin', adminRoutes);
 app.use('/aws',s3routes);
 
+const verifyPhoneNumberToken = async (idToken:string) => {
+  try {
+    const decodedToken = await auth.verifyIdToken(idToken);
+    return decodedToken
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    // Handle the error (e.g., return an unauthorized response)
+  }
+};
+app.post('/api/verify-phone', async(req:Request, res:Response) => {
+     const users  = req.body;
+    const idToken=users.idToken;
+    const num=users.number;
+    const img=users.img;
+   const name=users.name;
+    try {
+      const decodedToken = await verifyPhoneNumberToken(idToken); 
 
-// app.post('/auth/telegram/callback', (req, res) => {
-//   const { hash, ...user } = req.body as { [key: string]: string };
-//   const dataCheckString = Object.keys(user)
-//     .sort()
-//     .map(key => `${key}=${user[key]}`)
-//     .join('\n');
-//   const hmac = crypto.createHmac('sha256', SECRET_KEY).update(dataCheckString).digest('hex');
-
-//   if (hmac !== hash) {
-//     return res.status(403).send('Authentication failed: Invalid hash.');
-//   }
-
-  // At this point, the user is authenticated
-  // You can save the user data to your database here
-
-//   res.send(`Hello, ${user.first_name}! Your Telegram ID is ${user.id}`);
-// });
- 
-
+      let user;
+    if (decodedToken) {
+    // Generate JWT token 
+     user=await UserDb.findOne({phone_number:num});
+    if(!user){
+      user=new UserDb({
+        phone_number:num,
+        displayName:name,
+        image:img
+      });
+      
+      await user.save();
+    }
+    
+    const jwtToken = generateToken({
+      ids: user._id as string,
+      phone_number: user.phone_number
+    });
+    console.log("user",user)
+    res.status(200).json({
+      message: 'User authenticated successfully',
+      token: jwtToken
+    });
+  } else {
+    res.status(401).send('Authentication failed');
+  }
+} catch (error) {
+  console.error('Error during authentication:', error);
+  res.status(401).send('Authentication failed');
+}
+});
 // Example route
 app.get('/', (req: Request, res: Response) => {
   

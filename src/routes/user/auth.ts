@@ -8,11 +8,17 @@ import { checkGuilds, checkInviteLink, fetchGuildChannelInfo, sendNotification }
 import UserDb, { IUser } from "../../models/user/user";
 import { DiscordConnected } from "../../middleware/user/discord";
 import KolsDB from "../../models/kols/kols";
+import crypto from 'crypto';
+import { checkTelegramId } from "../../middleware/user/telegram";
+import { ensureAuthenticated } from "../../middleware/user/discordAuthentication";
+import { verifyToken } from "../../middleware/user/verifyToken";
+
 dotenv.config();
 
 const authrouter = express.Router();
-
-// Google route
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
+const SECRET_KEY = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
+// Google route 
 
 authrouter.get(
   "/google/kol",
@@ -53,7 +59,6 @@ authrouter.get(
 
 authrouter.get(
   "/twitter",
-  isAuthenticated,
   TwitterConnected,
   passport.authenticate("twitter")
 );
@@ -70,7 +75,6 @@ authrouter.get(
 
 authrouter.get(
   "/discord",
-  isAuthenticated,
   DiscordConnected,
   passport.authenticate("discord")
 );
@@ -83,22 +87,60 @@ authrouter.get(
      }) 
 );
 
-authrouter.get('/auth/telegram', (req:Request, res:Response) => {
-  res.send(`
-    <script async src="https://telegram.org/js/telegram-widget.js?7"
-            data-telegram-login="${process.env.TELEGRAM_BOT_USERNAME}"
-            data-size="large"
-            data-auth-url="${process.env.PUBLIC_SERVER_URL}/auth/telegram/callback"
-            data-request-access="write"></script>
-  `);
+
+authrouter.post('/telegram/callback', checkTelegramId,async (req, res) => {
+  try {
+    const { hash, ...user } = req.body as { [key: string]: string };
+    const users = req.user as IUser;
+    const role = users.role; 
+
+    const dataCheckString = Object.keys(user)
+      .sort()
+      .map(key => `${key}=${user[key]}`)
+      .join('\n');
+
+    const hmac = crypto.createHmac('sha256', SECRET_KEY).update(dataCheckString).digest('hex');
+
+    if (hmac !== hash) {
+      return res.status(403).send('Authentication failed: Invalid hash.');
+    }
+
+    // At this point, the user is authenticated
+    // You can save the user data to your database here
+    let userdata;
+    
+    if (role === 'kol') {
+      userdata = await KolsDB.findOne({ googleId: users.googleId });
+      if (!userdata) {
+        userdata = new KolsDB({
+          teleInfo: {
+            telegramId: user.id,
+            teleName: user.first_name,
+            teleusername: user.username,
+          },
+        });
+        await userdata.save();
+      }
+    } else {
+      userdata = await UserDb.findOne({ googleId: users.googleId });
+      if (!userdata) {
+        userdata = new UserDb({
+          teleInfo: {
+            telegramId: user.id,
+            teleName: user.first_name,
+            teleusername: user.username,
+          },
+        });
+        await userdata.save();
+      }
+    }
+
+    return res.send(`Hello, ${user.first_name}! Your Telegram ID is ${user.id}`);
+  } catch (error) {
+    console.error("Error during authentication:", error);
+    return res.status(500).send("Internal server error.");
+  }
 });
-// Telegram callback route
-authrouter.get('/auth/telegram/callback',
-  passport.authenticate('telegram', {
-    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`,
-    failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
-     })
-);
 
 // Get the Specific user info
 
@@ -108,42 +150,34 @@ authrouter.get("/login/success", loginSuccess);
 
 authrouter.get("/login/failed", loginFailed);
 
-// Get User And Kol info
+// Get User And Kol info  
 
-authrouter.get("/profile",isAuthenticated, async (req, res) => {
+authrouter.get("/profile",verifyToken, async (req, res) => {
   const user = req.user as any;
   let data;
-  if (user.role === 'kol') {
-    data = await KolsDB.findById(user._id);
-  } else {
-    data = await UserDb.findById(user._id);
+  if (!user) {
+    return res.status(201).json({success:false, message: "User not found. Please login" });
+
   }
 
-  if (!data) {
-    return res.status(401).json({ message: "User not found. Please login" });
-  }
+  data = await UserDb.findById(user.ids);
+   
   return res.status(200).send(data);
 });
 
 // update profile user and Kol
 
-authrouter.put("/profile/update",isAuthenticated, updateUser );
+authrouter.put("/profile/update",verifyToken, updateUser );
 
 // logout client
-authrouter.get("/logout",isAuthenticated, logout);
-
+authrouter.get("/logout",verifyToken , logout);
 
 // fetch guiild channel  (DISORD)
 
 authrouter.get('/fetch-guild/:guildId', async (req: Request, res: Response) => {
-  if (!req.user) {
-    return res.status(401).send('User is not authenticated');
-  }
-
-  const users = req.user as IUser;
-
+  const users=req.body;
   if (!users.discordInfo || !users.discordInfo.accessToken) {
-    return res.status(400).send('User does not have a Discord access token');
+    return res.status(200).send('User does not have a Discord access token');
   }
 
   const accessToken = users.discordInfo.accessToken;
@@ -167,13 +201,13 @@ authrouter.get('/fetch-guild/:guildId', async (req: Request, res: Response) => {
 
 authrouter.get('/check-guilds', async (req: Request, res: Response) => {
   if (!req.user) {
-    return res.status(401).send('User is not authenticated');
+    return res.status(201).send({success:false,message:'User is not authenticated'});
   }
 
   const users = req.user as IUser;
 
   if (!users.discordInfo || !users.discordInfo.accessToken) {
-    return res.status(400).send('User does not have a Discord access token');
+    return res.status(200).send('User does not have a Discord access token');
   }
 
   const accessToken = users.discordInfo.accessToken;
@@ -198,7 +232,7 @@ authrouter.post('/message/channel', async (req: Request, res: Response) => {
 
   const users = req.user as IUser;
   if (!users.discordInfo || !users.discordInfo.accessToken) {
-    return res.status(400).send('User does not have a Discord access token');
+    return res.status(200).send('User does not have a Discord access token');
   }
   const {channelId, message}=req.body;
   try {
@@ -214,23 +248,23 @@ authrouter.post('/message/channel', async (req: Request, res: Response) => {
 // Check Invited url is valid or not   (DISORD)
 
  
-authrouter.get('/validate/:inviteUrl', async (req: Request, res: Response) => {
-  if (!req.user) {
-    return res.status(401).send('User is not authenticated');
-  }
+authrouter.post('/validate/:inviteUrl', async (req: Request, res: Response) => {
+    if (!req.user) {
+      return res.status(201).send({success:false,message:'User is not authenticated'});
+    }
 
   const users = req.user as IUser;
-
+console.log(users)
   if (!users.discordInfo || !users.discordInfo.accessToken) {
-    return res.status(400).send('User does not have a Discord access token');
+    return res.status(201).send('User does not have a Discord access token');
   }
 
   try {
-    const {inviteUrl}=req.params;
+    const inviteUrl = decodeURIComponent(req.params.inviteUrl);
     const validLink = await checkInviteLink(inviteUrl);
 
     if (validLink) {
-      res.status(200).json({ success: true, message: 'Valid link and bot is in the guild' });
+      res.status(200).json({ success: true, message: 'Valid link and bot is in the guild',validLink });
     } else {
       res.status(200).json({ success: false, message: 'INValid link . bot is not in the guild' });
     }
@@ -238,7 +272,7 @@ authrouter.get('/validate/:inviteUrl', async (req: Request, res: Response) => {
 
   } catch (error) {
     console.error('Error fetching guilds:', error);
-    return res.status(500).send('Failed to fetch guilds');
+    return res.status(201).send({ success: false, message:'Failed to fetch guilds'});
   }
 });
 

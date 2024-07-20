@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import QuestModel, { Quest } from "../../models/quest/quest.model";
 import CommunityModel from "../../models/community/community.model";
+import UserDb from "../../models/user/user";
 
 
 export const questController = {
@@ -8,15 +9,15 @@ export const questController = {
     // create a quest
   createQuest: async (req: Request, res: Response) => {
     console.log("req form qust controlelr:0", req.body);
-
     try {
-        const { communityId } = req.body;
+        const { communityId, creator } = req.body;
 
         // Create a new quest
         const newQuest: Quest = await QuestModel.create(req.body);
 
         // Verify if the community exists
-        const currentCommunity = await CommunityModel.findById(communityId);
+        const currentCommunity = await CommunityModel.findById( communityId );
+        const creatorUser = await UserDb.findById( creator );
         if (!currentCommunity) {
             res.status(400).json({ message: "Community not found" });
             return; // Stop further execution
@@ -24,8 +25,10 @@ export const questController = {
 
         // Update the community with the new quest ID
         currentCommunity?.quests?.push(newQuest._id);
+        creatorUser?.createdQuests?.push( newQuest?._id );
+        
         await currentCommunity.save();
-
+        await creatorUser?.save();
         // Send success response
         res.status(201).json({ newQuest: newQuest, msg: "New Quest Created successfully" });
     } catch (error) {

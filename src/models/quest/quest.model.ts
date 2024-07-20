@@ -20,13 +20,15 @@ interface Reward {
 }
 
 export interface Quest {
-  _id: string;
+  _id: string | mongoose.Types.ObjectId | any;
   title: string;
   description: string;
   type: QuestType;
   status: QuestStatus;
   rewards: Reward[];
   tasks?: string[];
+  creator?: mongoose.Types.ObjectId;
+  community?: mongoose.Types.ObjectId
 }
 
 const QuestSchema: Schema = new mongoose.Schema<Quest>({
@@ -36,18 +38,18 @@ const QuestSchema: Schema = new mongoose.Schema<Quest>({
   type: {
     type: String,
     enum: Object.values(QuestType),
-    // required: true
   },
   status: {
     type: String,
     enum: Object.values(QuestStatus),
-    // required: true
   },
   tasks: [],
   rewards: [{
     type: { type: String },
     value: { type: Number }
-  }]
+  }] ,
+  creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  community: { type: mongoose.Schema.Types.ObjectId, ref: 'Community' },
 }, {
   timestamps: true
 }); 
