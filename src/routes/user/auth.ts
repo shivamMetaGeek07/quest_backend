@@ -11,6 +11,7 @@ import KolsDB from "../../models/kols/kols";
 import crypto from 'crypto';
 import { checkTelegramId } from "../../middleware/user/telegram";
 import { ensureAuthenticated } from "../../middleware/user/discordAuthentication";
+import { verifyToken } from "../../middleware/user/verifyToken";
 
 dotenv.config();
 
@@ -153,27 +154,25 @@ authrouter.get("/login/failed", loginFailed);
 
 // Get User And Kol info
 
-authrouter.get("/profile",isAuthenticated, async (req, res) => {
+authrouter.get("/profile",verifyToken, async (req, res) => {
   const user = req.user as any;
   let data;
-  if (user.role === 'kol') {
-    data = await KolsDB.findById(user._id);
-  } else {
-    data = await UserDb.findById(user._id);
+  if (!user) {
+    return res.status(201).json({success:false, message: "User not found. Please login" });
+
   }
 
-  if (!data) {
-    return res.status(201).json({success:false, message: "User not found. Please login" });
-  }
+  data = await UserDb.findById(user.ids);
+   
   return res.status(200).send(data);
 });
 
 // update profile user and Kol
 
-authrouter.put("/profile/update",isAuthenticated, updateUser );
+authrouter.put("/profile/update",verifyToken, updateUser );
 
 // logout client
-authrouter.get("/logout",isAuthenticated, logout);
+authrouter.get("/logout",verifyToken , logout);
 
 
 // fetch guiild channel  (DISORD)
