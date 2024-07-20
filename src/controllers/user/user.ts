@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import User from "../../models/user/user";
 import { CommandInteractionOptionResolver } from "discord.js";
+import UserDb from "../../models/user/user";
 
 const getUserById = async (req: Request, res: Response) => {
 
@@ -13,10 +14,35 @@ const getUserById = async (req: Request, res: Response) => {
     res.status(200).json(user);  
   } catch (error) {
     res.status(500).json({ error: error });
-  }
-  
-  
+  } 
 };
+
+const getFriendsByIds = async ( req: Request, res: Response ): Promise<void> =>
+{
+  try
+  {
+    const friendsId = req.body.friendsIds;
+        
+    if ( !Array.isArray( friendsId ) )
+    {
+      res.status( 400 ).json( { message: 'Invalid input: friendsId must be an array' } );
+      return;
+    }
+
+    const friends = await User.find( { _id: { $in: friendsId } } );
+        
+    res.status( 200 ).json( {
+      message: "friendsId fetched successfully",
+      friends
+    } );
+  } catch ( error )
+  {
+    console.error( 'Error in getFriendsByIds:', error );
+    res.status( 500 ).json( {
+      message: 'Internal server error while fetching friends'
+    } );
+  }
+}
 
 const followUser = async (req: Request, res: Response) => {
   const { userId, followId } = req.body;
@@ -74,14 +100,18 @@ const unfollowUser = async (req: Request, res: Response) => {
   }
 };
 
-const getAllUser=async (req: Request, res: Response) => {
+const getAllUser = async ( req: Request, res: Response ) =>
+{
+  console.log("THis is get all users funcion")
   try {
     const users: any = await User.find();
     console.log(users);
     res.status(200).json(users);
-  } catch (err) {
-    res.status(500).json({ error: err });
+  } catch ( err ) 
+  {
+    console.log("error in geting the users :-",err)
+    res.status( 500 ).json( { error: err } );
   }
 }
 
-export { getUserById, followUser, unfollowUser,getAllUser };
+export { getUserById, followUser, unfollowUser,getAllUser, getFriendsByIds };
