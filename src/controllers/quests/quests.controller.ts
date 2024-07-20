@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import QuestModel, { Quest } from "../../models/quest/quest.model";
 import CommunityModel from "../../models/community/community.model";
-import User from "models/user/user";
+import UserDb from "../../models/user/user";
+
 
 export const questController = {
 
@@ -16,7 +17,7 @@ export const questController = {
 
         // Verify if the community exists
         const currentCommunity = await CommunityModel.findById( communityId );
-        const creatorUser = await User.findById( creator );
+        const creatorUser = await UserDb.findById( creator );
         if (!currentCommunity) {
             res.status(400).json({ message: "Community not found" });
             return; // Stop further execution

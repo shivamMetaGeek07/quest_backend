@@ -1,6 +1,6 @@
 import express from 'express';
 import { login, signup } from '../../controllers/admin/adminControllers';
-import { getCommunityData, createCommunityData, updateCommunityData } from '../../controllers/admin/communityData';
+import { getCommunityData } from '../../controllers/admin/communityData';
 import { addFeed, deleteFeed, updateFeed } from '../../controllers/feeds/feed';
 const router = express.Router();
 
@@ -8,8 +8,7 @@ const router = express.Router();
 router.post('/signup',signup);
 router.post('/login',login);
 router.get('/getCommunityData',getCommunityData);
-router.post('/createCommunityData',createCommunityData);
-router.post('/updateCommunityData',updateCommunityData);
+// router.post('/updateCommunityData',createOrUpdateCommunityData);
 router.post('/add-feed',addFeed);
 
 // update the feed

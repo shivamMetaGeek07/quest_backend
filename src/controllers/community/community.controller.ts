@@ -169,9 +169,17 @@ export const CommunityController = {
     {
         try
         {
-            const communities: Community[] = await CommunityModel.find( {
-                ecosystem: req.params.ecosystem
-            } );
+            let communities: Community[] = []
+            if ( req.params.ecosystem )
+            {
+                 communities = await CommunityModel.find( {
+                    ecosystem: req.params.ecosystem
+                } );
+                
+            } else
+            {
+                 communities = await CommunityModel.find();
+            }
             res.status( 200 ).json( communities );
         } catch ( error )
         {
@@ -187,9 +195,16 @@ export const CommunityController = {
     {
         try
         {
-            const communities: Community[] = await CommunityModel.find( {
-                category: req.params.category
-            } );
+            let communities: Community[] = []
+            if ( req.params.category )
+            {
+                communities = await CommunityModel.find( {
+                    category: req.params.category
+                } );
+            } else
+            {
+                communities = await CommunityModel.find();
+            }
             res.status( 200 ).json( communities );
         } catch ( error )
         {
@@ -211,6 +226,15 @@ export const CommunityController = {
                 res.status( 400 ).json( { message: 'Invalid community ID or member ID' } );
                 return;
             }
+            const community = await CommunityModel.findById( communityId );
+           
+            if ( memberId == community?.creator )
+            {
+                res.status( 400 ).json( {
+                    message: 'You cannot join your own community'
+                } );
+                return;
+            }
 
             const updatedCommunity = await CommunityModel.findOneAndUpdate(
                 { _id: communityId, members: { $ne: memberId } },
@@ -218,7 +242,7 @@ export const CommunityController = {
                 { new: true, runValidators: true }
             );
 
-            console.log( updatedCommunity );
+            // console.log( updatedCommunity );
             if ( !updatedCommunity )
             {
                 res.status( 404 ).json( { message: 'Community not found or member already added' } );
