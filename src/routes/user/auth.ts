@@ -59,7 +59,6 @@ authrouter.get(
 
 authrouter.get(
   "/twitter",
-  isAuthenticated,
   TwitterConnected,
   passport.authenticate("twitter")
 );
@@ -76,7 +75,6 @@ authrouter.get(
 
 authrouter.get(
   "/discord",
-  isAuthenticated,
   DiscordConnected,
   passport.authenticate("discord")
 );
@@ -152,7 +150,7 @@ authrouter.get("/login/success", loginSuccess);
 
 authrouter.get("/login/failed", loginFailed);
 
-// Get User And Kol info
+// Get User And Kol info  
 
 authrouter.get("/profile",verifyToken, async (req, res) => {
   const user = req.user as any;
@@ -174,16 +172,10 @@ authrouter.put("/profile/update",verifyToken, updateUser );
 // logout client
 authrouter.get("/logout",verifyToken , logout);
 
-
 // fetch guiild channel  (DISORD)
 
 authrouter.get('/fetch-guild/:guildId', async (req: Request, res: Response) => {
-  if (!req.user) {
-    return res.status(201).send({success:false,message:'User is not authenticated'});
-  }
-
-  const users = req.user as IUser;
-
+  const users=req.body;
   if (!users.discordInfo || !users.discordInfo.accessToken) {
     return res.status(200).send('User does not have a Discord access token');
   }
