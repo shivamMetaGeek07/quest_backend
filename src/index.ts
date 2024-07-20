@@ -80,28 +80,31 @@ const verifyPhoneNumberToken = async (idToken:string) => {
 app.post('/api/verify-phone', async(req:Request, res:Response) => {
      const users  = req.body;
     const idToken=users.idToken;
-  const name=users.name;
+    const num=users.number;
+    // const img=users.img;
+   const name=users.name;
     try {
       const decodedToken = await verifyPhoneNumberToken(idToken); 
 
       let user;
     if (decodedToken) {
-    // Generate JWT token
-     user=await UserDb.findOne({phone_number:decodedToken.phone_number});
-     
+    // Generate JWT token 
+     user=await UserDb.findOne({phone_number:num});
     if(!user){
       user=new UserDb({
-        phone_number:decodedToken.phone_number,
-        displayName:name
+        phone_number:num,
+        displayName:name,
+        // image:img
       });
-
+      
       await user.save();
     }
+    
     const jwtToken = generateToken({
       ids: user._id as string,
       phone_number: user.phone_number
     });
-
+    console.log("user",user)
     res.status(200).json({
       message: 'User authenticated successfully',
       token: jwtToken
