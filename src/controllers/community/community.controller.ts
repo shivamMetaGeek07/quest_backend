@@ -214,13 +214,14 @@ export const CommunityController = {
         }
     },
 
-    // join the community by member
+    // join the community by member 
     joinCommunity: async ( req: Request, res: Response ): Promise<void> =>
     {
         try
         {
             const communityId = req.params.id;
             const memberId = req.body.memberId;
+            console.log("firsdsdst",memberId,communityId)
             if ( !communityId || !memberId )
             {
                 res.status( 400 ).json( { message: 'Invalid community ID or member ID' } );

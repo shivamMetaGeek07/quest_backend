@@ -58,8 +58,7 @@ authrouter.get(
 // Connect twitter account  of user and check it is authenticate or not
 
 authrouter.get(
-  "/twitter",
-  TwitterConnected,
+  "/twitter", 
   passport.authenticate("twitter")
 );
 
@@ -75,7 +74,6 @@ authrouter.get(
 
 authrouter.get(
   "/discord",
-  DiscordConnected,
   passport.authenticate("discord")
 );
 
@@ -154,7 +152,7 @@ authrouter.get("/login/failed", loginFailed);
 
 authrouter.get("/profile",verifyToken, async (req, res) => {
   const user = req.user as any;
-  let data;
+   let data;
   if (!user) {
     return res.status(201).json({success:false, message: "User not found. Please login" });
 
@@ -248,14 +246,13 @@ authrouter.post('/message/channel', async (req: Request, res: Response) => {
 // Check Invited url is valid or not   (DISORD)
 
  
-authrouter.post('/validate/:inviteUrl', async (req: Request, res: Response) => {
-    if (!req.user) {
-      return res.status(201).send({success:false,message:'User is not authenticated'});
-    }
-
-  const users = req.user as IUser;
-console.log(users)
-  if (!users.discordInfo || !users.discordInfo.accessToken) {
+authrouter.post('/validate/:inviteUrl', verifyToken,async (req: Request, res: Response) => {
+  const user = req.user as any;
+  const userExist =await UserDb.findById(user.ids)
+  if (!userExist) {
+    return res.status(401).send('User is not authenticated');
+  }
+  if (!userExist.discordInfo || !userExist.discordInfo.accessToken) {
     return res.status(201).send('User does not have a Discord access token');
   }
 
