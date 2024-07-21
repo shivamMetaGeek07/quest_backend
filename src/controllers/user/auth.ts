@@ -108,6 +108,8 @@ export const checkIfUserFollows = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   const user = req.user as any;
   const { bgImage, bio, nickname, image } = req.body;  // Extract the fields from the request body
+  console.log("user",req.user);
+  console.log("req.body",req.body);
   try {
 
     // Check the role and find the appropriate user document
@@ -116,22 +118,22 @@ export const updateUser = async (req: Request, res: Response) => {
       return res.status(201).json({success:false, message: "Invlid request" });
 
     }
+    data = await UserDb.findById(user.ids);
+
     if (!data) {
       return res.status(201).json({success:false, message: "User not found. Please login" });
 
     }
-
-     data = await UserDb.findById(user.ids);
-
+    console.log("data",data);
 
       // Update user fields
-      user.bgImage = bgImage || user.bgImage;  // Update only if provided
-      user.bio = bio || user.bio;
-      user.nickname = nickname || user.nickname;
-      user.image = image || user.image;
-
-      await user.save();  // Save the updated user document
-      return res.status(200).json({ message: 'User updated successfully', user });
+      // user.bgImage = bgImage || user.bgImage;  // Update only if provided
+      data.bio = bio || user.bio;
+      data.displayName = nickname || user.nickname;
+      data.image = image || user.image;
+      await data.save();  // Save the updated user document
+      
+      return res.status(200).json({ message: 'User updated successfully', data });
              // Save the updated kol document
   } catch (error) {
     console.error('Error updating user or KOL:', error);
