@@ -12,6 +12,7 @@ import crypto from 'crypto';
 import { checkTelegramId } from "../../middleware/user/telegram";
 import { ensureAuthenticated } from "../../middleware/user/discordAuthentication";
 import { verifyToken } from "../../middleware/user/verifyToken";
+import axios from "axios";
 
 dotenv.config();
 
@@ -244,7 +245,37 @@ authrouter.post('/message/channel', async (req: Request, res: Response) => {
 });
 
 // Check Invited url is valid or not   (DISORD)
+authrouter.post('/check-discord-membership', async (req, res) => {
+  const { userId, accessToken, guildId } = req.body;
+  console.log("dsd",userId, accessToken, guildId)
+  try {
+    const isMember = await isUserInGuild(userId, accessToken, guildId);
+    res.json({ isMember });
+  } catch (error) {
+    console.error('Error checking Discord membership:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
+ 
+
+const   isUserInGuild=async(userId:string, accessToken:string, guildId:string)=> {
+  try {
+    const response = await axios.get('https://discord.com/api/users/@me/guilds', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const guilds = response.data;
+    const isMember = guilds.some(guild => guild.id === guildId);
+    console.log(isMember)
+    return isMember;
+  } catch (error) {
+    // console.error('Error fetching user guilds:', error);
+    return false;
+  }
+}
  
 authrouter.post('/validate/:inviteUrl', verifyToken,async (req: Request, res: Response) => {
   const user = req.user as any;
@@ -259,7 +290,6 @@ authrouter.post('/validate/:inviteUrl', verifyToken,async (req: Request, res: Re
   try {
     const inviteUrl = decodeURIComponent(req.params.inviteUrl);
     const validLink = await checkInviteLink(inviteUrl);
-
     if (validLink) {
       res.status(200).json({ success: true, message: 'Valid link and bot is in the guild',validLink });
     } else {
