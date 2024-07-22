@@ -15,7 +15,10 @@ import { jwtUser, verifyToken } from "../../middleware/user/verifyToken";
 import axios from "axios";
 import oauth from 'oauth';
 import jwt from 'jsonwebtoken';
-
+interface Guild {
+  id: string;
+  name?: string; // Optional property
+}
 dotenv.config();
 
 const authrouter = express.Router();
@@ -256,7 +259,7 @@ authrouter.put("/profile/update",verifyToken, updateUser );
 // logout client
 authrouter.get("/logout",verifyToken , logout);
 
-// fetch guiild channel  (DISORD)
+// fetch guiild channel  (DISORD) 
 
 authrouter.get('/fetch-guild/:guildId', async (req: Request, res: Response) => {
   const users=req.body;
@@ -331,8 +334,9 @@ authrouter.post('/message/channel', async (req: Request, res: Response) => {
 
 // Check Invited url is valid or not   (DISORD)
 authrouter.post('/check-discord-membership', async (req, res) => {
-  const { userId, accessToken, guildId } = req.body;
-  console.log("dsd",userId, accessToken, guildId)
+  const { data, accessToken, guildId } = req.body;
+  console.log("dsd", guildId)
+  const userId=data;
   try {
     const isMember = await isUserInGuild(userId, accessToken, guildId);
     res.json({ isMember });
@@ -351,11 +355,14 @@ const   isUserInGuild=async(userId:string, accessToken:string, guildId:string)=>
         Authorization: `Bearer ${accessToken}`,
       },
     });
-
+    console.log(userId);
+    console.log("hhh",guildId)
     const guilds = response.data;
-    const isMember = guilds.some(guild => guild.id === guildId);
-    console.log(isMember)
-    return isMember;
+    console.log("guilds",guilds)
+    const isMember = guilds.some((guild: Guild) => guild.id === guildId);
+     
+    console.log(isMember); 
+     return isMember;
   } catch (error) {
     // console.error('Error fetching user guilds:', error);
     return false;
