@@ -39,7 +39,7 @@ export interface IUser extends Document {
   bio: string;
   nickname: string;
   bgImage: string;
-  badges?: string[];
+  badges?: object[];
   role: string;
   image: string;
   rank: number;
@@ -65,7 +65,7 @@ export interface IUser extends Document {
 // Create the User schema
 const userSchema: Schema = new mongoose.Schema(
   {
-    phone_number: { type: String, required: true },
+    phone_number: { type: String, required: true,unique:true },
     googleId:{ type: String },
     displayName: { type: String },
     email: { type: String },
@@ -73,9 +73,9 @@ const userSchema: Schema = new mongoose.Schema(
     bio: { type: String },
     bgImage: { type: String },
     nickname: { type: String },
-    badges: { type: [String] },
+    badges: { type: [ {} ] },
     role: { type: String, default: 'user' },
-    level: { type: String, default: 'NOOB' },
+    level: { type: String, default: '-' },
     rank: { type: Number, default: 0 },
     quest: [{ type: mongoose.Schema.Types.ObjectId, ref: "Quest" }],
     completedTasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
@@ -122,4 +122,4 @@ export default UserDb;
 export const generateToken=({ids,phone_number}:{ids:string,phone_number:string})=>{
   const jwtToken = jwt.sign({ ids, phone_number }, JWT_SECRET_Token, { expiresIn: '24h' });
   return jwtToken;
-}
+} 
