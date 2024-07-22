@@ -27,7 +27,7 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
 
     const data= jwt.verify(token, secretKey)
 
-    // If token is valid, store the decoded information in req.user 
+    // If token is valid, store the decoded information in req.user  
     req.user = data;
     next();
 };

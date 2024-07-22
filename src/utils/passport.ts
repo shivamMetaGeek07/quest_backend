@@ -86,7 +86,7 @@ passport.use(
       callbackURL: `${process.env.PUBLIC_SERVER_URL}/auth/twitter/callback`,
       includeEmail: true,
       passReqToCallback: true, 
-    } as IStrategyOptionWithRequest, // Type assertion
+    } , // Type assertion
     async (
       req: Request,
       token: string,
@@ -95,9 +95,9 @@ passport.use(
       done: (error: any, user?: any) => void
     ) => {
       console.log("ssdsds",req)
+      const tokens=req.cookies.authToken;
+      console.log("token in X",tokens)
       try {
-        const tokens=req.cookies.authToken;
-        console.log("token in discord",tokens)
         const data= await jwt.verify(tokens, secretKey);
         const users = data as jwtUser;
         console.log("sddsdds",users)
