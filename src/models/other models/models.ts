@@ -27,6 +27,7 @@ const Badge = mongoose.model<IBadge>('Badge', BadgeSchema);
   taskInfo: string;
   expiresAt: Date; 
 } 
+
 const ReferralSchema:Schema=new mongoose.Schema({
   referralCode:{type:String ,unique:true,required:true},
   userInfo: {
@@ -38,6 +39,7 @@ const ReferralSchema:Schema=new mongoose.Schema({
   communityInfo:{type:mongoose.Schema.Types.ObjectId, ref:'Community',required:true},
   taskInfo:{type:mongoose.Schema.Types.ObjectId, ref:'Task' ,required:true},
   expiresAt: { type: Date, required: true, index: { expires: '0s' } } 
-},{timestamps:true});
+}, { timestamps: true } );
+
 const ReferralDb:Model<IReferral>= mongoose.model<IReferral>("Referral",ReferralSchema);
 export {ReferralDb ,Badge} ;

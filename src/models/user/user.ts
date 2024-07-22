@@ -39,7 +39,7 @@ export interface IUser extends Document {
   bio: string;
   nickname: string;
   bgImage: string;
-  badges?: string[];
+  badges?: object[];
   role: string;
   image: string;
   rank: number;
@@ -73,9 +73,9 @@ const userSchema: Schema = new mongoose.Schema(
     bio: { type: String },
     bgImage: { type: String },
     nickname: { type: String },
-    badges: { type: [String] },
+    badges: { type: [ {} ] },
     role: { type: String, default: 'user' },
-    level: { type: String, default: 'NOOB' },
+    level: { type: String, default: '-' },
     rank: { type: Number, default: 0 },
     quest: [{ type: mongoose.Schema.Types.ObjectId, ref: "Quest" }],
     completedTasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
