@@ -65,7 +65,7 @@ export interface IUser extends Document {
 // Create the User schema
 const userSchema: Schema = new mongoose.Schema(
   {
-    phone_number: { type: String, required: true },
+    phone_number: { type: String, required: true,unique:true },
     googleId:{ type: String },
     displayName: { type: String },
     email: { type: String },

@@ -12,6 +12,7 @@ import crypto from 'crypto';
 import { checkTelegramId } from "../../middleware/user/telegram";
 import { ensureAuthenticated } from "../../middleware/user/discordAuthentication";
 import { verifyToken } from "../../middleware/user/verifyToken";
+import axios from "axios";
 
 dotenv.config();
 
@@ -58,8 +59,7 @@ authrouter.get(
 // Connect twitter account  of user and check it is authenticate or not
 
 authrouter.get(
-  "/twitter",
-  TwitterConnected,
+  "/twitter", 
   passport.authenticate("twitter")
 );
 
@@ -75,7 +75,6 @@ authrouter.get(
 
 authrouter.get(
   "/discord",
-  DiscordConnected,
   passport.authenticate("discord")
 );
 
@@ -154,7 +153,7 @@ authrouter.get("/login/failed", loginFailed);
 
 authrouter.get("/profile",verifyToken, async (req, res) => {
   const user = req.user as any;
-  let data;
+   let data;
   if (!user) {
     return res.status(201).json({success:false, message: "User not found. Please login" });
 
@@ -246,23 +245,51 @@ authrouter.post('/message/channel', async (req: Request, res: Response) => {
 });
 
 // Check Invited url is valid or not   (DISORD)
+authrouter.post('/check-discord-membership', async (req, res) => {
+  const { userId, accessToken, guildId } = req.body;
+  console.log("dsd",userId, accessToken, guildId)
+  try {
+    const isMember = await isUserInGuild(userId, accessToken, guildId);
+    res.json({ isMember });
+  } catch (error) {
+    console.error('Error checking Discord membership:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
  
-authrouter.post('/validate/:inviteUrl', async (req: Request, res: Response) => {
-    if (!req.user) {
-      return res.status(201).send({success:false,message:'User is not authenticated'});
-    }
 
-  const users = req.user as IUser;
-console.log(users)
-  if (!users.discordInfo || !users.discordInfo.accessToken) {
+const   isUserInGuild=async(userId:string, accessToken:string, guildId:string)=> {
+  try {
+    const response = await axios.get('https://discord.com/api/users/@me/guilds', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const guilds = response.data;
+    const isMember = guilds.some(guild => guild.id === guildId);
+    console.log(isMember)
+    return isMember;
+  } catch (error) {
+    // console.error('Error fetching user guilds:', error);
+    return false;
+  }
+}
+ 
+authrouter.post('/validate/:inviteUrl', verifyToken,async (req: Request, res: Response) => {
+  const user = req.user as any;
+  const userExist =await UserDb.findById(user.ids)
+  if (!userExist) {
+    return res.status(401).send('User is not authenticated');
+  }
+  if (!userExist.discordInfo || !userExist.discordInfo.accessToken) {
     return res.status(201).send('User does not have a Discord access token');
   }
 
   try {
     const inviteUrl = decodeURIComponent(req.params.inviteUrl);
     const validLink = await checkInviteLink(inviteUrl);
-
     if (validLink) {
       res.status(200).json({ success: true, message: 'Valid link and bot is in the guild',validLink });
     } else {

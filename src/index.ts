@@ -16,6 +16,7 @@ import s3routes from "./routes/s3routes";
 import taskRouter from "./routes/task/task.route";
 import userRouter from "./routes/user/user";
 import morgan from "morgan";
+import cookieParser from "cookie-parser"
 import {auth} from "./utils/fireAdmin"
 import UserDb, { generateToken } from "./models/user/user";
 dotenv.config();
@@ -25,6 +26,7 @@ app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());  
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 const port = process.env.PORT || 8080;
 
@@ -33,6 +35,7 @@ app.use(
     origin: process.env.PUBLIC_CLIENT_URL,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'] // Ensure these headers are allowed
   })
 );
 
@@ -86,10 +89,10 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
     try {
       const decodedToken = await verifyPhoneNumberToken(idToken); 
 
-      let user;
-    if (decodedToken) {
-    // Generate JWT token 
-     user=await UserDb.findOne({phone_number:num});
+    if (!decodedToken) {
+        return res.status(401).send('Authentication failed');
+      }    // Generate JWT token 
+    let user=await UserDb.findOne({phone_number:num});
     if(!user){
       user=new UserDb({
         phone_number:num,
@@ -98,20 +101,17 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
       });
       
       await user.save();
+      console.log("created user",user)
     }
-    
     const jwtToken = generateToken({
       ids: user._id as string,
       phone_number: user.phone_number
     });
-    console.log("user",user)
+    console.log("user not",user)
     res.status(200).json({
       message: 'User authenticated successfully',
       token: jwtToken
     });
-  } else {
-    res.status(401).send('Authentication failed');
-  }
 } catch (error) {
   console.error('Error during authentication:', error);
   res.status(401).send('Authentication failed');
