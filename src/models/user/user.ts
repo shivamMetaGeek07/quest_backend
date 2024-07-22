@@ -122,4 +122,4 @@ export default UserDb;
 export const generateToken=({ids,phone_number}:{ids:string,phone_number:string})=>{
   const jwtToken = jwt.sign({ ids, phone_number }, JWT_SECRET_Token, { expiresIn: '24h' });
   return jwtToken;
-}
+} 

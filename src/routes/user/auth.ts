@@ -11,8 +11,10 @@ import KolsDB from "../../models/kols/kols";
 import crypto from 'crypto';
 import { checkTelegramId } from "../../middleware/user/telegram";
 import { ensureAuthenticated } from "../../middleware/user/discordAuthentication";
-import { verifyToken } from "../../middleware/user/verifyToken";
+import { jwtUser, verifyToken } from "../../middleware/user/verifyToken";
 import axios from "axios";
+import oauth from 'oauth';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -58,19 +60,114 @@ authrouter.get(
 
 // Connect twitter account  of user and check it is authenticate or not
 
-authrouter.get(
-  "/twitter", 
-  passport.authenticate("twitter")
+// authrouter.get(
+//   "/twitter", 
+//   passport.authenticate("twitter")
+// );
+
+// authrouter.get(
+//   "/twitter/callback",
+//   passport.authenticate("twitter", {
+//     successRedirect:`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`,
+//     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
+//      })
+// );
+const consumerKey = process.env.Twitter_Key!;
+const consumerSecret = process.env.Twitter_Secret_key!;
+const callbackURL = `${process.env.PUBLIC_SERVER_URL}/auth/twitter/callback`;
+const sessionSecret = process.env.JWT_SECRET as string;
+
+const oauthConsumer = new oauth.OAuth(
+  'https://api.twitter.com/oauth/request_token',
+  'https://api.twitter.com/oauth/access_token',
+  consumerKey,
+  consumerSecret,
+  '1.0A',
+  callbackURL,
+  'HMAC-SHA1'
 );
 
-authrouter.get(
-  "/twitter/callback",
-  passport.authenticate("twitter", {
-    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`,
-    failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
-     })
-);
+authrouter.get('/twitter', (req, res) => {
+  oauthConsumer.getOAuthRequestToken((error, oauthToken, oauthTokenSecret, results) => {
+    if (error) {
+      return res.status(500).send(error);
+    }
+    console.log('OAuth Request Token:', { oauthToken, oauthTokenSecret });
+    res.cookie('oauthToken', oauthToken, { httpOnly: true });
+    res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true });
+    res.redirect(`https://api.twitter.com/oauth/authenticate?oauth_token=${oauthToken}`);
+ });
+});
 
+authrouter.get('/twitter/callback', (req, res) => {
+  const { oauth_token: oauthToken, oauth_verifier: oauthVerifier } = req.query;
+  const oauthTokenSecret = req.cookies.oauthTokenSecret;
+
+  console.log('Received callback with params:', { oauthToken, oauthVerifier, oauthTokenSecret });
+
+  if (!oauthToken || !oauthVerifier || !oauthTokenSecret) {
+    console.error('Missing OAuth parameters:', { oauthToken, oauthVerifier, oauthTokenSecret });
+    return res.status(401).send({ statusCode: 401, data: 'Request token missing' });
+  }
+  
+  oauthConsumer.getOAuthAccessToken(
+    oauthToken as string,
+    oauthTokenSecret,
+    oauthVerifier as string,
+    async (error, oauthAccessToken, oauthAccessTokenSecret, results) => {
+      if (error) {
+        return res.status(500).send(error);
+      }
+
+      const profileUrl = 'https://api.twitter.com/1.1/account/verify_credentials.json';
+      const profileParams = { include_email: 'true' };
+
+      oauthConsumer.get(
+        `${profileUrl}?include_email=true`,
+        oauthAccessToken,
+        oauthAccessTokenSecret,
+        async (error, data, response) => {
+          if (error) {
+            return res.status(500).send(error);
+          }
+
+          const profile = JSON.parse(data as string);
+
+          try {
+            const tokens = req.cookies.authToken;
+            const jwtPayload = jwt.verify(tokens, sessionSecret);
+            console.log(jwtPayload)
+            const users = jwtPayload as jwtUser;
+
+            if (!users || !users.ids) {
+              return res.status(400).send('User ID not provided');
+            }
+
+            let user = await UserDb.findById(users.ids);
+
+            if (!user) {
+              return res.status(404).send('User not found');
+            }
+
+            user.twitterInfo = {
+              twitterId: profile.id,
+              username: profile.screen_name,
+              profileImageUrl: profile.profile_image_url_https,
+              oauthToken: oauthAccessToken,
+              oauthTokenSecret: oauthAccessTokenSecret,
+            };
+
+            await user.save();
+           
+            res.redirect(`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`);
+          } catch (error: any) {
+            return res.status(500).send(error);
+          }
+        }
+      );
+    }
+  );
+});
 // Connect Discord account  of user and check it is authenticate or not
 
 authrouter.get(
@@ -85,14 +182,14 @@ authrouter.get(
     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
      }) 
 );
+ 
 
-
-authrouter.post('/telegram/callback', checkTelegramId,async (req, res) => {
+authrouter.post('/telegram/callback', verifyToken,async (req, res) => {
   try {
     const { hash, ...user } = req.body as { [key: string]: string };
-    const users = req.user as IUser;
-    const role = users.role; 
+    const users = req.user as jwtUser;
 
+    const userId=users.ids;
     const dataCheckString = Object.keys(user)
       .sort()
       .map(key => `${key}=${user[key]}`)
@@ -108,20 +205,8 @@ authrouter.post('/telegram/callback', checkTelegramId,async (req, res) => {
     // You can save the user data to your database here
     let userdata;
     
-    if (role === 'kol') {
-      userdata = await KolsDB.findOne({ googleId: users.googleId });
-      if (!userdata) {
-        userdata = new KolsDB({
-          teleInfo: {
-            telegramId: user.id,
-            teleName: user.first_name,
-            teleusername: user.username,
-          },
-        });
-        await userdata.save();
-      }
-    } else {
-      userdata = await UserDb.findOne({ googleId: users.googleId });
+     
+      userdata = await UserDb.findById({ userId});
       if (!userdata) {
         userdata = new UserDb({
           teleInfo: {
@@ -132,7 +217,7 @@ authrouter.post('/telegram/callback', checkTelegramId,async (req, res) => {
         });
         await userdata.save();
       }
-    }
+    
 
     return res.send(`Hello, ${user.first_name}! Your Telegram ID is ${user.id}`);
   } catch (error) {
