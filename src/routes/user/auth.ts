@@ -190,11 +190,11 @@ authrouter.get(
 );
  
 
-authrouter.post('/telegram/callback', verifyToken,async (req, res) => {
+authrouter.get('/telegram/callback', verifyToken,async (req, res) => {
   try {
     const { hash, ...user } = req.body as { [key: string]: string };
     const users = req.user as jwtUser;
-
+    console.log("users",users);
     const userId=users.ids;
     const dataCheckString = Object.keys(user)
       .sort()
@@ -213,6 +213,7 @@ authrouter.post('/telegram/callback', verifyToken,async (req, res) => {
     
      
       userdata = await UserDb.findById({ userId});
+      console.log("first",userdata)
       if (!userdata) {
         userdata = new UserDb({
           teleInfo: {
