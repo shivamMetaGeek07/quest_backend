@@ -122,7 +122,7 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
       httpOnly: true,
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
       secure: process.env.NODE_ENV === 'production',
-      // path: process.env.CLIENT_URL,
+      sameSite: "none" as "none"     // path: process.env.CLIENT_URL,
       };
     res.status(200).cookie("authToken", jwtToken, options).json({
       success: true,
