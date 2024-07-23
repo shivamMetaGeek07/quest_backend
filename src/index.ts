@@ -19,6 +19,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser"
 import {auth} from "./utils/fireAdmin"
 import UserDb, { generateToken } from "./models/user/user";
+import grantRouter from "./routes/grants/grant";
 dotenv.config();
 const app: Express = express();
 app.use( express.json() );
@@ -54,11 +55,17 @@ app.use(
     },
   }));
 
+  
+  app.use((req, res, next) => {
+    console.log('authToken', req.cookies); // To debug cookie values
+    next();
+  });
 
 app.use( '/feed', feedRouter );
 
 app.use( "/quest", questsRouter );
 app.use( '/community', communityRoute );
+app.use("/grant",grantRouter);
 
 app.use('/task', taskRouter)
 
@@ -109,10 +116,21 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
       phone_number: user.phone_number
     });
     console.log("user not",user)
-    res.status(200).json({
-      message: 'User authenticated successfully',
-      token: jwtToken
-    });
+    // res.status(200).json({
+    //   message: 'User authenticated successfully',
+    //   token: jwtToken
+    // });
+    const options = {
+      httpOnly: true,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: "none" as "none"     // path: process.env.CLIENT_URL,
+      };
+    res.status(200).cookie("authToken", jwtToken, options).json({
+      success: true,
+      authToken:jwtToken,
+      message:"user authenticated succesfully",
+    });
 } catch (error) {
   console.error('Error during authentication:', error);
   res.status(401).send('Authentication failed');

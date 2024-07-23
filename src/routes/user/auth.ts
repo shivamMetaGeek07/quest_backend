@@ -23,7 +23,7 @@ dotenv.config();
 
 const authrouter = express.Router();
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
-const SECRET_KEY = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
+const SECRET_KEYS = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
 // Google route 
 
 authrouter.get(
@@ -96,8 +96,10 @@ authrouter.get('/twitter', (req, res) => {
       return res.status(500).send(error);
     }
     console.log('OAuth Request Token:', { oauthToken, oauthTokenSecret });
-    res.cookie('oauthToken', oauthToken, { httpOnly: true });
-    res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true });
+    // res.cookie('oauthToken', oauthToken, { httpOnly: true });
+    // res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true });
+    res.cookie('oauthToken', oauthToken, { httpOnly: true, secure: true, sameSite: 'none' });
+    res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true, secure: true, sameSite: 'none' });
     res.redirect(`https://api.twitter.com/oauth/authenticate?oauth_token=${oauthToken}`);
  });
 });
@@ -135,9 +137,10 @@ authrouter.get('/twitter/callback', (req, res) => {
           }
 
           const profile = JSON.parse(data as string);
-
+          console.log("cookies",req.cookies)
           try {
             const tokens = req.cookies.authToken;
+            console.log("twitter",tokens)
             const jwtPayload = jwt.verify(tokens, sessionSecret);
             console.log(jwtPayload)
             const users = jwtPayload as jwtUser;
@@ -187,47 +190,52 @@ authrouter.get(
 );
  
 
-authrouter.post('/telegram/callback', verifyToken,async (req, res) => {
+authrouter.get('/telegram/callback', verifyToken, async (req, res) => {
   try {
-    const { hash, ...user } = req.body as { [key: string]: string };
+    // Extract query parameters from the request
+    const { id, first_name, last_name, username, photo_url } = req.query as { 
+      id?: string;
+      first_name?: string;
+      last_name?: string;
+      username?: string;
+      photo_url?: string;
+    };
+
+    // Optional user verification
     const users = req.user as jwtUser;
+    const userId = users.ids;
 
-    const userId=users.ids;
-    const dataCheckString = Object.keys(user)
-      .sort()
-      .map(key => `${key}=${user[key]}`)
-      .join('\n');
+    console.log("Received user data:", { id, first_name, last_name, username, photo_url });
+    console.log("User ID from token:", userId);
 
-    const hmac = crypto.createHmac('sha256', SECRET_KEY).update(dataCheckString).digest('hex');
-
-    if (hmac !== hash) {
-      return res.status(403).send('Authentication failed: Invalid hash.');
+    // Check if user exists in the database
+    let userdata = await UserDb.findById(userId);
+    console.log("first",userdata)
+    if (!userdata) {
+      // User does not exist, respond with 404
+      return res.status(404).send({ message: "Invalid user" });
     }
 
-    // At this point, the user is authenticated
-    // You can save the user data to your database here
-    let userdata;
-    
-     
-      userdata = await UserDb.findById({ userId});
-      if (!userdata) {
-        userdata = new UserDb({
-          teleInfo: {
-            telegramId: user.id,
-            teleName: user.first_name,
-            teleusername: user.username,
-          },
-        });
-        await userdata.save();
-      }
-    
+    // Update user details with Telegram data if the fields are provided
+    userdata.teleInfo = {
+      telegramId: id || userdata.teleInfo?.telegramId,
+      teleName: first_name || userdata.teleInfo?.teleName,
+      teleusername: username || userdata.teleInfo?.teleusername,
+      teleimg: photo_url || userdata.teleInfo?.teleimg,
+      telelastname: last_name || userdata.teleInfo?.telelastname,
+    };
 
-    return res.send(`Hello, ${user.first_name}! Your Telegram ID is ${user.id}`);
+    await userdata.save();
+
+
+    // res.status(200).send({ message: "Telegram connected successfully" });
+   return res.redirect(`${process.env.PUBLIC_CLIENT_URL}/user/profile`);
   } catch (error) {
     console.error("Error during authentication:", error);
-    return res.status(500).send("Internal server error.");
+    return res.status(500).send({ message: "Try again later" });
   }
 });
+
 
 // Get the Specific user info
 

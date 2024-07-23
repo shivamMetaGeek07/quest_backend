@@ -32,6 +32,10 @@ export type TaskOrPoll = ITaskBase & {
   invitee?: mongoose.Types.ObjectId[];
   uploadLink?: string;
   response?: string | number;
+  taskName?:string;
+  taskDescription?:string;
+  
+
 };
 
 const TaskSchema: Schema = new mongoose.Schema(
@@ -65,6 +69,8 @@ const TaskSchema: Schema = new mongoose.Schema(
     invitee: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     uploadLink: { type: String },
     response: { type: String || Number },
+    taskName:{type:String},
+    taskDescription:{type:String},
 
     completions: [{
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
