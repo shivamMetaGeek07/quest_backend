@@ -191,6 +191,7 @@ authrouter.get(
  
 
 authrouter.get('/telegram/callback', verifyToken,async (req, res) => {
+  console.log("dsds",req)
   try {
     const user = req.body ;
     console.log("first",user)
