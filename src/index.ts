@@ -19,6 +19,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser"
 import {auth} from "./utils/fireAdmin"
 import UserDb, { generateToken } from "./models/user/user";
+import grantRouter from "./routes/grants/grant";
 dotenv.config();
 const app: Express = express();
 app.use( express.json() );
@@ -59,6 +60,7 @@ app.use( '/feed', feedRouter );
 
 app.use( "/quest", questsRouter );
 app.use( '/community', communityRoute );
+app.use("/grant",grantRouter);
 
 app.use('/task', taskRouter)
 
