@@ -96,8 +96,10 @@ authrouter.get('/twitter', (req, res) => {
       return res.status(500).send(error);
     }
     console.log('OAuth Request Token:', { oauthToken, oauthTokenSecret });
-    res.cookie('oauthToken', oauthToken, { httpOnly: true });
-    res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true });
+    // res.cookie('oauthToken', oauthToken, { httpOnly: true });
+    // res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true });
+    res.cookie('oauthToken', oauthToken, { httpOnly: true, secure: true, sameSite: 'strict' });
+    res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true, secure: true, sameSite: 'strict' });
     res.redirect(`https://api.twitter.com/oauth/authenticate?oauth_token=${oauthToken}`);
  });
 });
@@ -135,9 +137,10 @@ authrouter.get('/twitter/callback', (req, res) => {
           }
 
           const profile = JSON.parse(data as string);
-
+          console.log("cookies",req.cookies)
           try {
             const tokens = req.cookies.authToken;
+            console.log("twitter",tokens)
             const jwtPayload = jwt.verify(tokens, sessionSecret);
             console.log(jwtPayload)
             const users = jwtPayload as jwtUser;
