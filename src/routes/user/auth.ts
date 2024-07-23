@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import passport from "../../utils/passport";
-import { checkIfUserFollows, loginFailed, loginSuccess, logout, updateUser } from "../../controllers/user/auth";
+import { checkExistingUser, checkIfUserFollows, loginFailed, loginSuccess, logout, updateUser } from "../../controllers/user/auth";
 import { isAuthenticated } from "../../middleware/user/authorize.user";
 import { TwitterConnected } from "../../middleware/user/twitter";
 import { checkGuilds, checkInviteLink, fetchGuildChannelInfo, sendNotification } from "../../controllers/user/discord";
@@ -231,7 +231,10 @@ authrouter.post('/telegram/callback', verifyToken,async (req, res) => {
 
 // Get the Specific user info
 
-authrouter.get("/twitter/follows/:targetUserId", isAuthenticated, checkIfUserFollows);
+authrouter.get( "/twitter/follows/:targetUserId", isAuthenticated, checkIfUserFollows );
+
+// check if user exisit or not
+authrouter.post( "/check/user", checkExistingUser );
 
 authrouter.get("/login/success", loginSuccess);
 
