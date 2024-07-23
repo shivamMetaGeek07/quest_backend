@@ -210,21 +210,26 @@ authrouter.get('/telegram/callback', verifyToken, async (req, res) => {
 
     // Check if user exists in the database
     let userdata = await UserDb.findById(userId);
+    console.log("first",userdata)
     if (!userdata) {
-      // Create a new user entry with optional fields
-      userdata = new UserDb({
-        teleInfo: {
-          telegramId: id,
-          teleName: first_name,
-          teleusername: username,
-          teleimg: photo_url,
-          telelastname: last_name
-        },
-      });
-      await userdata.save();
+      // User does not exist, respond with 404
+      return res.status(404).send({ message: "Invalid user" });
     }
 
-    return res.status(200).send({ message: "Telegram connected successfully" });
+    // Update user details with Telegram data if the fields are provided
+    userdata.teleInfo = {
+      telegramId: id || userdata.teleInfo?.telegramId,
+      teleName: first_name || userdata.teleInfo?.teleName,
+      teleusername: username || userdata.teleInfo?.teleusername,
+      teleimg: photo_url || userdata.teleInfo?.teleimg,
+      telelastname: last_name || userdata.teleInfo?.telelastname,
+    };
+
+    await userdata.save();
+
+
+    // res.status(200).send({ message: "Telegram connected successfully" });
+   return res.redirect(`${process.env.PUBLIC_CLIENT_URL}/user/profile`);
   } catch (error) {
     console.error("Error during authentication:", error);
     return res.status(500).send({ message: "Try again later" });
