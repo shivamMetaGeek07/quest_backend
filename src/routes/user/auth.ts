@@ -195,14 +195,15 @@ authrouter.get('/telegram/callback', verifyToken,async (req, res) => {
     const { hash, ...user } = req.body as { [key: string]: string };
     const users = req.user as jwtUser;
     console.log("users",users);
+    console.log("hash",hash);
     const userId=users.ids;
     const dataCheckString = Object.keys(user)
       .sort()
       .map(key => `${key}=${user[key]}`)
       .join('\n');
-
+    console.log("datacheck",dataCheckString)
     const hmac = crypto.createHmac('sha256', SECRET_KEY).update(dataCheckString).digest('hex');
-
+    console.log("hmac",hmac)
     if (hmac !== hash) {
       return res.status(403).send('Authentication failed: Invalid hash.');
     }
