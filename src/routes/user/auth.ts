@@ -98,8 +98,8 @@ authrouter.get('/twitter', (req, res) => {
     console.log('OAuth Request Token:', { oauthToken, oauthTokenSecret });
     // res.cookie('oauthToken', oauthToken, { httpOnly: true });
     // res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true });
-    res.cookie('oauthToken', oauthToken, { httpOnly: true, secure: true, sameSite: 'strict' });
-    res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true, secure: true, sameSite: 'strict' });
+    res.cookie('oauthToken', oauthToken, { httpOnly: true, secure: true, sameSite: 'none' });
+    res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true, secure: true, sameSite: 'none' });
     res.redirect(`https://api.twitter.com/oauth/authenticate?oauth_token=${oauthToken}`);
  });
 });

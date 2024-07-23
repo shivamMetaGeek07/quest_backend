@@ -75,6 +75,7 @@ export const fetchGuilds = async (token: string) => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        credentials:'include'
       });
 
       if (response.status === 429) {
@@ -180,6 +181,7 @@ export const checkUserInChannel = async (channelId: string, userId: string) => {
         headers: {
           Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
         },
+        credentials:'include'
       });
   
       if (!response.ok) throw new Error(`Failed to fetch channel members: ${response.statusText}`);
