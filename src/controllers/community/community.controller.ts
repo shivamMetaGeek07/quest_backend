@@ -149,17 +149,20 @@ export const CommunityController = {
         }
     },
     
-    //  delete a community
+    // delete the community
     deleteCommunity: async ( req: Request, res: Response ): Promise<void> =>
     {
         try
         {
-            const community: Community | null = await CommunityModel.findByIdAndDelete( req.params.id );
-            res.status( 200 ).json( community );
-        } catch ( error )   
+            const communityId = req.params.communityId;
+            const community = await CommunityModel.findByIdAndDelete( communityId )
+            if ( !community ) res.status( 404 ).json( { message: 'Community not found' } );
+            else res.status( 200 ).json( { message: 'Community deleted successfully' } );
+        } catch ( error )
         {
-            res.status( 400 ).json( {
-                message: 'failed to delete the community', error
+            console.error( 'Error in deleteCommunity:', error );
+            res.status( 500 ).json( {
+                message: 'Internal server error while deleting community'
             } );
         }
     },
@@ -214,13 +217,14 @@ export const CommunityController = {
         }
     },
 
-    // join the community by member
+    // join the community by member 
     joinCommunity: async ( req: Request, res: Response ): Promise<void> =>
     {
         try
         {
             const communityId = req.params.id;
             const memberId = req.body.memberId;
+            console.log("firsdsdst",memberId,communityId)
             if ( !communityId || !memberId )
             {
                 res.status( 400 ).json( { message: 'Invalid community ID or member ID' } );
@@ -322,8 +326,14 @@ export const CommunityController = {
             message: 'Internal server error while leaving community'
         });
     }
-    }
+    },
     
+   
+
+    
+
+             
+
     
 }
  

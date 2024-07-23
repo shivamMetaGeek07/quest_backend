@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import TaskModel, { TaskOrPoll } from "../../models/task/task.model";
 import QuestModel, { Quest } from "../../models/quest/quest.model";
 import UserDb, { IUser } from "../../models/user/user";
-import { ReferralDb } from "../../models/other models/models";
+import { Badge, ReferralDb } from "../../models/other models/models";
 import CommunityModel from "../../models/community/community.model";
 import mongoose from "mongoose";
 
@@ -207,69 +207,72 @@ export const taskController = {
     },
 
     // rewards claim
-    claimReward: async ( req: Request, res: Response ): Promise<any> =>
-    {
-        try
-        {
-            const { userId, questId } = req.body;
+   claimReward: async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { userId, questId } = req.body;
 
-            const quest: Quest | null = await QuestModel.findById( questId );
-            const user: IUser | null = await UserDb.findById( userId );
+        const quest: Quest | null = await QuestModel.findById(questId);
+        const user: IUser | null = await UserDb.findById(userId);
 
-            if ( !quest || !user )
-            {
-                return res.status( 404 ).json( {
-                    message: "Quest or user not found"
-                } );
-            }
-
-            // Check if the reward has already been claimed by the user
-            if ( user.quest.includes( questId ) )
-            {
-                return res.status( 200 ).json( {
-                    message: "Reward already claimed"
-                } );
-            }
-
-            // Update user's rewards
-            quest.rewards.forEach( reward =>
-            {
-                if ( reward.type === 'xp' )
-                {
-                    user.rewards.xp += reward.value;
-                } else if ( reward.type === 'coin' )
-                {
-                    user.rewards.coins += reward.value;
-                }
-            } );
-
-            // Add questId to user's quests
-            user.quest.push( questId );
-
-            if ( user.quest.length > 5 )
-            {
-                user.badges?.push( "MAXI" );
-            } else if ( user.quest.length > 2 )
-            {
-                user.badges?.push( "ENTHUSIAST" );
-            } else
-            {
-                user.badges?.push( "NOOB" );
-            }
-
-            // Save the updated user
-            await user.save();
-
-            res.status( 200 ).json( {
-                message: "Reward claimed successfully",
-                updatedRewards: user.rewards
-            } );
-        } catch ( error )
-        {
-            console.error( error );
-            res.status( 500 ).json( { message: "Error claiming reward", error } );
+        if (!quest || !user) {
+            return res.status(404).json({
+                message: "Quest or user not found"
+            });
         }
-    },
+
+        // Check if the reward has already been claimed by the user
+        if (user.quest.includes(questId)) {
+            return res.status(200).json({
+                message: "Reward already claimed"
+            });
+        }
+
+        // Update user's rewards
+        quest.rewards.forEach(reward => {
+            if (reward.type === 'xp') {
+                user.rewards.xp += reward.value;
+            } else if (reward.type === 'coin') {
+                user.rewards.coins += reward.value;
+            }
+        });
+
+        // Add questId to user's quests
+        user.quest.push(questId);
+
+        // Fetch and sort badges
+        const badges = await Badge.find();
+        const sortedBadges = badges.sort((a, b) => b.level - a.level);
+
+        // Check for new badge
+        for ( const badge of sortedBadges )
+        {
+            // console.log( badge.level, badge.questCriteria, badge.taskCriteria )
+       
+            if (user.quest.length >= badge.questCriteria && user.completedTasks.length >= badge.taskCriteria) {
+                user.badges?.push( badge )
+                user.level = badge.level.toString();
+                // console.log("caleed")
+                break; // Exit after assigning the highest achieved badge
+            }
+        }
+
+        // console.log("user :-", user)
+        // Save the updated user
+        await user.save();
+
+        const response: any = {
+            message: "Reward claimed successfully",
+            updatedRewards: user.rewards
+        };
+       
+
+        res.status(200).json(response);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error claiming reward", error });
+    }
+},
 
     // delete the task
     deleteTask: async ( req: Request, res: Response ): Promise<void> =>

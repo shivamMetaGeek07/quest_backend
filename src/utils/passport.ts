@@ -5,14 +5,15 @@ import {
   IStrategyOptionWithRequest,
   Profile as TwitterProfile,
 } from "passport-twitter";
-// import  TelegramStrategy, { TelegramProfile }  from 'passport-telegram-official';
-// import {} from "passport-telegram";
+import jwt from 'jsonwebtoken';
 import { Strategy as DiscordStrategy, Profile as DiscordProfile } from "passport-discord";
 import dotenv from "dotenv";
 import UserDb, { IUser } from "../models/user/user";
 import { Request } from "express";
 import KolsDB from "../models/kols/kols";
 import { fetchGuilds } from "../controllers/user/discord";
+import { jwtUser } from "middleware/user/verifyToken";
+import { error } from "console";
 
 dotenv.config();
 
@@ -85,7 +86,7 @@ passport.use(
       callbackURL: `${process.env.PUBLIC_SERVER_URL}/auth/twitter/callback`,
       includeEmail: true,
       passReqToCallback: true, 
-    } as IStrategyOptionWithRequest, // Type assertion
+    } , // Type assertion
     async (
       req: Request,
       token: string,
@@ -93,17 +94,24 @@ passport.use(
       profile: TwitterProfile,
       done: (error: any, user?: any) => void
     ) => {
+      console.log("ssdsds",req)
+      const tokens=req.cookies.authToken;
+      console.log("token in X",tokens)
       try {
-        if (!req.user) {
-          return done(new Error("User is not authenticated"), null);
+        const data= await jwt.verify(tokens, secretKey);
+        const users = data as jwtUser;
+        console.log("sddsdds",users)
+        if (!users || !users.ids) {
+          return done(new Error( 'User ID not provided'));
+        }
+    
+        // Fetch the user by ID
+        let user = await UserDb.findById(users.ids);
+        
+        if (!user) {
+          return done(new Error('User not found'));
         }
 
-        const users = req.user as IUser;
-        let user;
-
-        // Check user role and update the appropriate database model
-        if (users.role === 'user') {
-          user = await UserDb.findById(users._id);
           if (user) {
             user.twitterInfo = {
               twitterId: profile.id,
@@ -116,25 +124,8 @@ passport.use(
           } else {
             return done(new Error("User not found"), null);
           }
-        } else if (users.role === 'kol') {
-          user = await KolsDB.findById(users._id);
-          if (user) {
-            user.twitterInfo = {
-              twitterId: profile.id,
-              username: profile.username,
-              profileImageUrl: profile.photos?.[0].value,
-              oauthToken: token,
-              oauthTokenSecret: tokenSecret,
-            };
-            await user.save();
-          } else {
-            return done(new Error("KOL not found"), null);
-          }
-        } else {
-          return done(new Error("Invalid role"), null);
-        }
+          return done(null, user);
 
-        return done(null, user);
       } catch (error: any) {
         return done(error);
       }
@@ -147,6 +138,8 @@ passport.use(
 const scopes = ['identify', 'email', 'guilds', 'guilds.join'];
   // console.log("first",process.env.DISCORD_ID)
   // console.log("second",process.env.DISCORD_SECRET_KEY)
+  const secretKey = process.env.JWT_SECRET as string;
+
 passport.use(
   new DiscordStrategy(
     {
@@ -158,18 +151,26 @@ passport.use(
     },
     async (req: Request, accessToken: string, refreshToken: string, profile: DiscordProfile, done: any) => {
       try {
-        if (!req.user) {
-          return done(new Error("User is not authenticated"), null);
+         
+        const token=req.cookies.authToken;
+        console.log("token in discord",token)
+        const data= await jwt.verify(token, secretKey);
+        const users = data as jwtUser;
+        console.log("sddsdds",users)
+        if (!users || !users.ids) {
+          return done(new Error( 'User ID not provided'));
         }
-
-        const users = req.user as IUser;
-        let user;
-
-        // Fetch user guilds
+    
+        // Fetch the user by ID
+        let user = await UserDb.findById(users.ids);
         
-        // Check user role and update the appropriate database model
-        if (users.role === 'user') {
-          user = await UserDb.findById(users._id);
+        if (!user) {
+          return done(new Error('User not found'));
+        }
+        
+        // Process user data (fetch user guilds, update database, etc.)
+        console.log("User found:", user);
+    
           const guilds = await fetchGuilds(accessToken);
           if (user) {
             user.discordInfo = {
@@ -184,27 +185,8 @@ passport.use(
           } else {
             return done(new Error("User not found"), null);
           }
-        } else if (users.role === 'kol') {
-          user = await KolsDB.findById(users._id);
-          const guilds = await fetchGuilds(accessToken);
-          if (user) {
-            user.discordInfo = {
-              discordId: profile.id,
-              username: profile.username,
-              profileImageUrl: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : undefined,
-              accessToken: accessToken,
-              refreshToken: refreshToken,
-              guilds: guilds.length > 0 ? guilds : undefined,
-            };
-            await user.save();
-          } else {
-            return done(new Error("KOL not found"), null);
-          }
-        } else {
-          return done(new Error("Invalid role"), null);
-        }
+          return done(null, user);
 
-        return done(null, user);
       } catch (error: any) {
         return done(error);
       }
@@ -257,7 +239,7 @@ passport.serializeUser((user: any, done) => {
 
 passport.deserializeUser(async (id: string, done) => {
   try {
-    let user = await UserDb.findById(id) || await KolsDB.findById(id);
+    let user = await UserDb.findById(id)  
     done(null, user);
   } catch (error) {
     done(error, null);

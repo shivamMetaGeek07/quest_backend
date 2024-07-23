@@ -7,8 +7,8 @@ import mongoose from 'mongoose';
 
 export const RefrralMiddleaware = async (req: Request, res: Response, next: NextFunction) => {
     const communityId = req.params.id;
+    
     const { referral, userId } = req.body;
-
     if (!referral) {
         return res.status(400).json({ message: "Invalid Call. Please Fill The referral" });
     }
@@ -23,6 +23,7 @@ export const RefrralMiddleaware = async (req: Request, res: Response, next: Next
         if (!community) {
             return res.status(404).json({ message: "Community not found" });
         }
+        console.log("ds",community._id.toString() !== referralCheck.communityInfo.toString())
 
         // Check if the community in the referral matches the community in the request
         if (community._id.toString() !== referralCheck.communityInfo.toString()) {
@@ -30,10 +31,10 @@ export const RefrralMiddleaware = async (req: Request, res: Response, next: Next
         }
 
         const taskId = referralCheck.taskInfo;
+
         if (!taskId) {
             return res.status(400).json({ message: "Task information is missing from referral" });
         }
-
         const task = await TaskModel.findById(taskId);
         if (!task) {
             return res.status(404).json({ message: "Task not found" });
@@ -43,12 +44,11 @@ export const RefrralMiddleaware = async (req: Request, res: Response, next: Next
         if (!userIdFromReferral) {
             return res.status(400).json({ message: "User information is missing from referral" });
         }
-
         const user = await UserDb.findById(userIdFromReferral);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-
+        console.log("first",user)
         // Check if the user has already completed this task
         const alreadyCompleted = task.completions?.some(
             (completion) => completion.user.toString() === userIdFromReferral.toString()
@@ -79,6 +79,7 @@ export const RefrralMiddleaware = async (req: Request, res: Response, next: Next
 
         user.completedTasks.push(new mongoose.Types.ObjectId(taskId)); // Convert to ObjectId
         await user.save();
+        console.log(communityId,referral,userId);
 
         return next();
     } catch (error) {

@@ -10,10 +10,9 @@ export const checkTelegramId = async (req: Request, res: Response, next: NextFun
       const { id: telegramId } = req.body as { [key: string]: string };
   
       // Check if the Telegram ID is already in KolsDB or UserDb
-      const kolUser = await KolsDB.findOne({ 'teleInfo.telegramId': telegramId });
       const regularUser = await UserDb.findOne({ 'teleInfo.telegramId': telegramId });
   
-      if (kolUser || regularUser) {
+      if (regularUser) {
         return res.status(403).send('Authentication failed: Telegram ID already exists.');
       }
   

@@ -11,8 +11,14 @@ import KolsDB from "../../models/kols/kols";
 import crypto from 'crypto';
 import { checkTelegramId } from "../../middleware/user/telegram";
 import { ensureAuthenticated } from "../../middleware/user/discordAuthentication";
-import { verifyToken } from "../../middleware/user/verifyToken";
-
+import { jwtUser, verifyToken } from "../../middleware/user/verifyToken";
+import axios from "axios";
+import oauth from 'oauth';
+import jwt from 'jsonwebtoken';
+interface Guild {
+  id: string;
+  name?: string; // Optional property
+}
 dotenv.config();
 
 const authrouter = express.Router();
@@ -57,25 +63,118 @@ authrouter.get(
 
 // Connect twitter account  of user and check it is authenticate or not
 
-authrouter.get(
-  "/twitter",
-  TwitterConnected,
-  passport.authenticate("twitter")
+// authrouter.get(
+//   "/twitter", 
+//   passport.authenticate("twitter")
+// );
+
+// authrouter.get(
+//   "/twitter/callback",
+//   passport.authenticate("twitter", {
+//     successRedirect:`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`,
+//     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
+//      })
+// );
+const consumerKey = process.env.Twitter_Key!;
+const consumerSecret = process.env.Twitter_Secret_key!;
+const callbackURL = `${process.env.PUBLIC_SERVER_URL}/auth/twitter/callback`;
+const sessionSecret = process.env.JWT_SECRET as string;
+
+const oauthConsumer = new oauth.OAuth(
+  'https://api.twitter.com/oauth/request_token',
+  'https://api.twitter.com/oauth/access_token',
+  consumerKey,
+  consumerSecret,
+  '1.0A',
+  callbackURL,
+  'HMAC-SHA1'
 );
 
-authrouter.get(
-  "/twitter/callback",
-  passport.authenticate("twitter", {
-    successRedirect:`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`,
-    failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
-     })
-);
+authrouter.get('/twitter', (req, res) => {
+  oauthConsumer.getOAuthRequestToken((error, oauthToken, oauthTokenSecret, results) => {
+    if (error) {
+      return res.status(500).send(error);
+    }
+    console.log('OAuth Request Token:', { oauthToken, oauthTokenSecret });
+    res.cookie('oauthToken', oauthToken, { httpOnly: true });
+    res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true });
+    res.redirect(`https://api.twitter.com/oauth/authenticate?oauth_token=${oauthToken}`);
+ });
+});
 
+authrouter.get('/twitter/callback', (req, res) => {
+  const { oauth_token: oauthToken, oauth_verifier: oauthVerifier } = req.query;
+  const oauthTokenSecret = req.cookies.oauthTokenSecret;
+
+  console.log('Received callback with params:', { oauthToken, oauthVerifier, oauthTokenSecret });
+
+  if (!oauthToken || !oauthVerifier || !oauthTokenSecret) {
+    console.error('Missing OAuth parameters:', { oauthToken, oauthVerifier, oauthTokenSecret });
+    return res.status(401).send({ statusCode: 401, data: 'Request token missing' });
+  }
+  
+  oauthConsumer.getOAuthAccessToken(
+    oauthToken as string,
+    oauthTokenSecret,
+    oauthVerifier as string,
+    async (error, oauthAccessToken, oauthAccessTokenSecret, results) => {
+      if (error) {
+        return res.status(500).send(error);
+      }
+
+      const profileUrl = 'https://api.twitter.com/1.1/account/verify_credentials.json';
+      const profileParams = { include_email: 'true' };
+
+      oauthConsumer.get(
+        `${profileUrl}?include_email=true`,
+        oauthAccessToken,
+        oauthAccessTokenSecret,
+        async (error, data, response) => {
+          if (error) {
+            return res.status(500).send(error);
+          }
+
+          const profile = JSON.parse(data as string);
+
+          try {
+            const tokens = req.cookies.authToken;
+            const jwtPayload = jwt.verify(tokens, sessionSecret);
+            console.log(jwtPayload)
+            const users = jwtPayload as jwtUser;
+
+            if (!users || !users.ids) {
+              return res.status(400).send('User ID not provided');
+            }
+
+            let user = await UserDb.findById(users.ids);
+
+            if (!user) {
+              return res.status(404).send('User not found');
+            }
+
+            user.twitterInfo = {
+              twitterId: profile.id,
+              username: profile.screen_name,
+              profileImageUrl: profile.profile_image_url_https,
+              oauthToken: oauthAccessToken,
+              oauthTokenSecret: oauthAccessTokenSecret,
+            };
+
+            await user.save();
+           
+            res.redirect(`${process.env.PUBLIC_CLIENT_URL}/sucessfulLogin`);
+          } catch (error: any) {
+            return res.status(500).send(error);
+          }
+        }
+      );
+    }
+  );
+});
 // Connect Discord account  of user and check it is authenticate or not
 
 authrouter.get(
   "/discord",
-  DiscordConnected,
   passport.authenticate("discord")
 );
 
@@ -86,14 +185,14 @@ authrouter.get(
     failureRedirect: `${process.env.PUBLIC_CLIENT_URL}/failed`,
      }) 
 );
+ 
 
-
-authrouter.post('/telegram/callback', checkTelegramId,async (req, res) => {
+authrouter.post('/telegram/callback', verifyToken,async (req, res) => {
   try {
     const { hash, ...user } = req.body as { [key: string]: string };
-    const users = req.user as IUser;
-    const role = users.role; 
+    const users = req.user as jwtUser;
 
+    const userId=users.ids;
     const dataCheckString = Object.keys(user)
       .sort()
       .map(key => `${key}=${user[key]}`)
@@ -109,20 +208,8 @@ authrouter.post('/telegram/callback', checkTelegramId,async (req, res) => {
     // You can save the user data to your database here
     let userdata;
     
-    if (role === 'kol') {
-      userdata = await KolsDB.findOne({ googleId: users.googleId });
-      if (!userdata) {
-        userdata = new KolsDB({
-          teleInfo: {
-            telegramId: user.id,
-            teleName: user.first_name,
-            teleusername: user.username,
-          },
-        });
-        await userdata.save();
-      }
-    } else {
-      userdata = await UserDb.findOne({ googleId: users.googleId });
+     
+      userdata = await UserDb.findById({ userId});
       if (!userdata) {
         userdata = new UserDb({
           teleInfo: {
@@ -133,7 +220,7 @@ authrouter.post('/telegram/callback', checkTelegramId,async (req, res) => {
         });
         await userdata.save();
       }
-    }
+    
 
     return res.send(`Hello, ${user.first_name}! Your Telegram ID is ${user.id}`);
   } catch (error) {
@@ -154,7 +241,7 @@ authrouter.get("/login/failed", loginFailed);
 
 authrouter.get("/profile",verifyToken, async (req, res) => {
   const user = req.user as any;
-  let data;
+   let data;
   if (!user) {
     return res.status(201).json({success:false, message: "User not found. Please login" });
 
@@ -172,7 +259,7 @@ authrouter.put("/profile/update",verifyToken, updateUser );
 // logout client
 authrouter.get("/logout",verifyToken , logout);
 
-// fetch guiild channel  (DISORD)
+// fetch guiild channel  (DISORD) 
 
 authrouter.get('/fetch-guild/:guildId', async (req: Request, res: Response) => {
   const users=req.body;
@@ -246,23 +333,55 @@ authrouter.post('/message/channel', async (req: Request, res: Response) => {
 });
 
 // Check Invited url is valid or not   (DISORD)
+authrouter.post('/check-discord-membership', async (req, res) => {
+  const { data, accessToken, guildId } = req.body;
+  console.log("dsd", guildId)
+  const userId=data;
+  try {
+    const isMember = await isUserInGuild(userId, accessToken, guildId);
+    res.json({ isMember });
+  } catch (error) {
+    console.error('Error checking Discord membership:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
  
-authrouter.post('/validate/:inviteUrl', async (req: Request, res: Response) => {
-    if (!req.user) {
-      return res.status(201).send({success:false,message:'User is not authenticated'});
-    }
 
-  const users = req.user as IUser;
-console.log(users)
-  if (!users.discordInfo || !users.discordInfo.accessToken) {
+const   isUserInGuild=async(userId:string, accessToken:string, guildId:string)=> {
+  try {
+    const response = await axios.get('https://discord.com/api/users/@me/guilds', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    console.log(userId);
+    console.log("hhh",guildId)
+    const guilds = response.data;
+    console.log("guilds",guilds)
+    const isMember = guilds.some((guild: Guild) => guild.id === guildId);
+     
+    console.log(isMember); 
+     return isMember;
+  } catch (error) {
+    // console.error('Error fetching user guilds:', error);
+    return false;
+  }
+}
+ 
+authrouter.post('/validate/:inviteUrl', verifyToken,async (req: Request, res: Response) => {
+  const user = req.user as any;
+  const userExist =await UserDb.findById(user.ids)
+  if (!userExist) {
+    return res.status(401).send('User is not authenticated');
+  }
+  if (!userExist.discordInfo || !userExist.discordInfo.accessToken) {
     return res.status(201).send('User does not have a Discord access token');
   }
 
   try {
     const inviteUrl = decodeURIComponent(req.params.inviteUrl);
     const validLink = await checkInviteLink(inviteUrl);
-
     if (validLink) {
       res.status(200).json({ success: true, message: 'Valid link and bot is in the guild',validLink });
     } else {

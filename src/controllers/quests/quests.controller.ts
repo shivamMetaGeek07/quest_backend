@@ -72,6 +72,8 @@ export const questController = {
             } );
         }
     },
+
+    
     
      // complete quest detail of several ids (bulk)
 
@@ -183,10 +185,6 @@ export const questController = {
             } );
         }
         
-    }
-    
-    
-
-        
+    }    
 
 }
