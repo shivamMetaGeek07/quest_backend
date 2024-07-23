@@ -54,6 +54,11 @@ app.use(
     },
   }));
 
+  
+  app.use((req, res, next) => {
+    console.log('authToken', req.cookies); // To debug cookie values
+    next();
+  });
 
 app.use( '/feed', feedRouter );
 
