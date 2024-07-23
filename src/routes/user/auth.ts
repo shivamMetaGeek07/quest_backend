@@ -190,7 +190,7 @@ authrouter.get(
 );
  
 
-authrouter.get('/telegram/callback', verifyToken,async (req, res) => {
+authrouter.post('/telegram/callback', verifyToken,async (req, res) => {
   try {
     const user = req.body ;
     console.log("first",user)
