@@ -190,40 +190,47 @@ authrouter.get(
 );
  
 
-authrouter.get('/telegram/callback', verifyToken,async (req, res) => {
-  console.log("dsds",req)
+authrouter.post('/telegram/callback', verifyToken, async (req, res) => {
   try {
-    const user = req.body ;
-    console.log("first",user)
+    // Extract query parameters from the request
+    const { id, first_name, last_name, username, photo_url } = req.query as { 
+      id?: string;
+      first_name?: string;
+      last_name?: string;
+      username?: string;
+      photo_url?: string;
+    };
+
+    // Optional user verification
     const users = req.user as jwtUser;
+    const userId = users.ids;
 
-    const userId=users.ids;
-     
-    console.log("verifyId",userId)
-    // At this point, the user is authenticated
-    // You can save the user data to your database here
-    
-     
-    let  userdata = await UserDb.findById({ userId});
-      if (!userdata) {
-        userdata = new UserDb({
-          teleInfo: {
-            telegramId: user.id,
-            teleName: user.first_name,
-            teleusername: user.username,
-            teleimg:user.photo_url,
-          },
-        });
-        await userdata.save();
-      }
-    
+    console.log("Received user data:", { id, first_name, last_name, username, photo_url });
+    console.log("User ID from token:", userId);
 
-    return res.status(200).send({message:"Telegram connected successfully"});
+    // Check if user exists in the database
+    let userdata = await UserDb.findById(userId);
+    if (!userdata) {
+      // Create a new user entry with optional fields
+      userdata = new UserDb({
+        teleInfo: {
+          telegramId: id,
+          teleName: first_name,
+          teleusername: username,
+          teleimg: photo_url,
+          telelastname: last_name
+        },
+      });
+      await userdata.save();
+    }
+
+    return res.status(200).send({ message: "Telegram connected successfully" });
   } catch (error) {
     console.error("Error during authentication:", error);
-    return res.status(500).send({message:"Try again letter"});
+    return res.status(500).send({ message: "Try again later" });
   }
 });
+
 
 // Get the Specific user info
 

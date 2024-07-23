@@ -20,6 +20,7 @@ export interface ITeleInfo {
   teleName?: string;
   teleusername?: string; 
   teleimg?:string;
+  telelastname?:string;
 }
 
 export interface IDiscordInfo {
@@ -104,7 +105,8 @@ const userSchema: Schema = new mongoose.Schema(
       telegramId: { type: String,unique:true },
       teleName: { type: String },
       teleusername: { type: String },
-      teleimg:{type:String}
+      teleimg:{type:String},
+      telelastname:{type:String}
     },
     followers: [{ type: String, default: [] }],
     following: [ { type: String, default: [] } ],
