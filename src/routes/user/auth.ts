@@ -23,7 +23,7 @@ dotenv.config();
 
 const authrouter = express.Router();
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
-const SECRET_KEY = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
+const SECRET_KEYS = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
 // Google route 
 
 authrouter.get(
@@ -192,18 +192,22 @@ authrouter.get(
 
 authrouter.get('/telegram/callback', verifyToken,async (req, res) => {
   try {
+    console.log("req.body", req.body);
     const { hash, ...user } = req.body as { [key: string]: string };
-    const users = req.user as jwtUser;
-    console.log("users",users);
-    console.log("hash",hash);
+    console.log("hash", hash);
+    console.log("user", user);
+    const users=req.user as jwtUser;
+    console.log("data",users)
     const userId=users.ids;
     const dataCheckString = Object.keys(user)
       .sort()
       .map(key => `${key}=${user[key]}`)
       .join('\n');
-    console.log("datacheck",dataCheckString)
-    const hmac = crypto.createHmac('sha256', SECRET_KEY).update(dataCheckString).digest('hex');
-    console.log("hmac",hmac)
+    console.log("dataCheckString", dataCheckString);
+
+    const hmac = crypto.createHmac('sha256', SECRET_KEYS).update(dataCheckString).digest('hex');
+    console.log("hmac", hmac);
+
     if (hmac !== hash) {
       return res.status(403).send('Authentication failed: Invalid hash.');
     }
