@@ -192,43 +192,35 @@ authrouter.get(
 
 authrouter.post('/telegram/callback', verifyToken,async (req, res) => {
   try {
-    const { hash, ...user } = req.body as { [key: string]: string };
+    const user = req.body ;
+    console.log("first",user)
     const users = req.user as jwtUser;
 
     const userId=users.ids;
-    const dataCheckString = Object.keys(user)
-      .sort()
-      .map(key => `${key}=${user[key]}`)
-      .join('\n');
-
-    const hmac = crypto.createHmac('sha256', SECRET_KEY).update(dataCheckString).digest('hex');
-
-    if (hmac !== hash) {
-      return res.status(403).send('Authentication failed: Invalid hash.');
-    }
-
+     
+    console.log("verifyId",userId)
     // At this point, the user is authenticated
     // You can save the user data to your database here
-    let userdata;
     
      
-      userdata = await UserDb.findById({ userId});
+    let  userdata = await UserDb.findById({ userId});
       if (!userdata) {
         userdata = new UserDb({
           teleInfo: {
             telegramId: user.id,
             teleName: user.first_name,
             teleusername: user.username,
+            teleimg:user.photo_url,
           },
         });
         await userdata.save();
       }
     
 
-    return res.send(`Hello, ${user.first_name}! Your Telegram ID is ${user.id}`);
+    return res.status(200).send({message:"Telegram connected successfully"});
   } catch (error) {
     console.error("Error during authentication:", error);
-    return res.status(500).send("Internal server error.");
+    return res.status(500).send({message:"Try again letter"});
   }
 });
 
