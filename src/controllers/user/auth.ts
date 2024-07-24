@@ -125,8 +125,8 @@ export const updateUser = async ( req: Request, res: Response ) =>
 {
   const user = req.user as any;
   const { bgImage, bio, nickname, image } = req.body;  // Extract the fields from the request body
-  console.log( "user", req.user );
-  console.log( "req.body", req.body );
+  // console.log( "user", req.user );
+  // console.log( "req.body", req.body );
   try
   {
 
@@ -144,7 +144,7 @@ export const updateUser = async ( req: Request, res: Response ) =>
       return res.status( 201 ).json( { success: false, message: "User not found. Please login" } );
 
     }
-    console.log( "data", data );
+    // console.log( "data", data );
 
     // Update user fields
     // user.bgImage = bgImage || user.bgImage;  // Update only if provided
@@ -167,7 +167,7 @@ export const checkExistingUser = async (req: Request, res: Response) => {
   try {
     // console.log(req.body);
     const user = await UserDb.findOne( { phone_number });
-    console.log(user);
+    // console.log(user);
     if (user) {
       return res.status(201).json({
         success: true, message: 'User already exists', existingUser: user

@@ -23,7 +23,7 @@ export const RefrralMiddleaware = async (req: Request, res: Response, next: Next
         if (!community) {
             return res.status(404).json({ message: "Community not found" });
         }
-        console.log("ds",community._id.toString() !== referralCheck.communityInfo.toString())
+        // console.log("ds",community._id.toString() !== referralCheck.communityInfo.toString())
 
         // Check if the community in the referral matches the community in the request
         if (community._id.toString() !== referralCheck.communityInfo.toString()) {
@@ -48,7 +48,7 @@ export const RefrralMiddleaware = async (req: Request, res: Response, next: Next
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        console.log("first",user)
+        // console.log("first",user)
         // Check if the user has already completed this task
         const alreadyCompleted = task.completions?.some(
             (completion) => completion.user.toString() === userIdFromReferral.toString()
@@ -79,7 +79,7 @@ export const RefrralMiddleaware = async (req: Request, res: Response, next: Next
 
         user.completedTasks.push(new mongoose.Types.ObjectId(taskId)); // Convert to ObjectId
         await user.save();
-        console.log(communityId,referral,userId);
+        // console.log(communityId,referral,userId);
 
         return next();
     } catch (error) {

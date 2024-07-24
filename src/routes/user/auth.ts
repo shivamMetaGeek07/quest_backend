@@ -95,7 +95,7 @@ authrouter.get('/twitter', (req, res) => {
     if (error) {
       return res.status(500).send(error);
     }
-    console.log('OAuth Request Token:', { oauthToken, oauthTokenSecret });
+    // console.log('OAuth Request Token:', { oauthToken, oauthTokenSecret });
     // res.cookie('oauthToken', oauthToken, { httpOnly: true });
     // res.cookie('oauthTokenSecret', oauthTokenSecret, { httpOnly: true });
     res.cookie('oauthToken', oauthToken, { httpOnly: true, secure: true, sameSite: 'none' });
@@ -108,7 +108,7 @@ authrouter.get('/twitter/callback', (req, res) => {
   const { oauth_token: oauthToken, oauth_verifier: oauthVerifier } = req.query;
   const oauthTokenSecret = req.cookies.oauthTokenSecret;
 
-  console.log('Received callback with params:', { oauthToken, oauthVerifier, oauthTokenSecret });
+  // console.log('Received callback with params:', { oauthToken, oauthVerifier, oauthTokenSecret });
 
   if (!oauthToken || !oauthVerifier || !oauthTokenSecret) {
     console.error('Missing OAuth parameters:', { oauthToken, oauthVerifier, oauthTokenSecret });
@@ -137,12 +137,12 @@ authrouter.get('/twitter/callback', (req, res) => {
           }
 
           const profile = JSON.parse(data as string);
-          console.log("cookies",req.cookies)
+          // console.log("cookies",req.cookies)
           try {
             const tokens = req.cookies.authToken;
-            console.log("twitter",tokens)
+            // console.log("twitter",tokens)
             const jwtPayload = jwt.verify(tokens, sessionSecret);
-            console.log(jwtPayload)
+            // console.log(jwtPayload)
             const users = jwtPayload as jwtUser;
 
             if (!users || !users.ids) {
@@ -205,12 +205,9 @@ authrouter.get('/telegram/callback', verifyToken, async (req, res) => {
     const users = req.user as jwtUser;
     const userId = users.ids;
 
-    console.log("Received user data:", { id, first_name, last_name, username, photo_url });
-    console.log("User ID from token:", userId);
-
     // Check if user exists in the database
     let userdata = await UserDb.findById(userId);
-    console.log("first",userdata)
+    // console.log("first",userdata)
     if (!userdata) {
       // User does not exist, respond with 404
       return res.status(404).send({ message: "Invalid user" });
@@ -312,8 +309,6 @@ authrouter.get('/check-guilds', async (req: Request, res: Response) => {
   try {
     const guilds = await checkGuilds( accessToken);
 
-    
-    console.log(guilds)
     return res.status(200).send(guilds);
   } catch (error) {
     console.error('Error fetching guilds:', error);
@@ -346,7 +341,7 @@ authrouter.post('/message/channel', async (req: Request, res: Response) => {
 // Check Invited url is valid or not   (DISORD)
 authrouter.post('/check-discord-membership', async (req, res) => {
   const { data, accessToken, guildId } = req.body;
-  console.log("dsd", guildId)
+  // console.log("dsd", guildId)
   const userId=data;
   try {
     const isMember = await isUserInGuild(userId, accessToken, guildId);
@@ -366,13 +361,8 @@ const   isUserInGuild=async(userId:string, accessToken:string, guildId:string)=>
         Authorization: `Bearer ${accessToken}`,
       },
     });
-    console.log(userId);
-    console.log("hhh",guildId)
     const guilds = response.data;
-    console.log("guilds",guilds)
     const isMember = guilds.some((guild: Guild) => guild.id === guildId);
-     
-    console.log(isMember); 
      return isMember;
   } catch (error) {
     // console.error('Error fetching user guilds:', error);

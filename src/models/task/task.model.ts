@@ -46,6 +46,7 @@ export type TaskOrPoll = ITaskBase & {
   response?: string | number;
   taskName?:string;
   taskDescription?: string;
+  uploadFileType?: string;
   
 
 };
@@ -74,9 +75,7 @@ const TaskSchema: Schema = new mongoose.Schema(
     guild:{type:String},
     discordLink:{type:String},
     visitor: [ { type: mongoose.Schema.Types.ObjectId, ref: 'User' } ],
- 
-
-    quizzes: [{
+        quizzes: [{
       question: { type: String },
       options: [{ type: String }],
       correctAnswer: { type: String }
@@ -97,7 +96,10 @@ const TaskSchema: Schema = new mongoose.Schema(
       completedAt: { type: Date, default: Date.now },
       submission: { type: String },
       userName : {type : String}
-    }]
+    } ],
+    uploadFileType: {
+       type: String,
+     }
   },
   { timestamps: true }
 );

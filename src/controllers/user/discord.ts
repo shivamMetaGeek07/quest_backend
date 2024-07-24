@@ -166,7 +166,6 @@ export const checkInviteLink = async (inviteUrl: string) => {
       const inviteCode = extractInviteCode(inviteUrl);
       const inviteDetails = await fetchInviteDetails(inviteCode);
       const checkLink = await isBotInGuild(inviteDetails.guild_id);
-      console.log("first",checkLink)
       const guilData=inviteDetails.guild_id;
       return {checkLink,guilData};
     } catch (error) {

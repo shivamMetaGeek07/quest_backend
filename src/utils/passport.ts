@@ -94,13 +94,10 @@ passport.use(
       profile: TwitterProfile,
       done: (error: any, user?: any) => void
     ) => {
-      console.log("ssdsds",req)
       const tokens=req.cookies.authToken;
-      console.log("token in X",tokens)
       try {
         const data= await jwt.verify(tokens, secretKey);
         const users = data as jwtUser;
-        console.log("sddsdds",users)
         if (!users || !users.ids) {
           return done(new Error( 'User ID not provided'));
         }
@@ -136,8 +133,7 @@ passport.use(
 // Discord OAUth Authentication
 
 const scopes = ['identify', 'email', 'guilds', 'guilds.join'];
-  // console.log("first",process.env.DISCORD_ID)
-  // console.log("second",process.env.DISCORD_SECRET_KEY)
+
   const secretKey = process.env.JWT_SECRET as string;
 
 passport.use(
@@ -153,10 +149,10 @@ passport.use(
       try {
          
         const token=req.cookies.authToken;
-        console.log("token in discord",token)
+        // console.log("token in discord",token)
         const data= await jwt.verify(token, secretKey);
         const users = data as jwtUser;
-        console.log("sddsdds",users)
+        // console.log("sddsdds",users)
         if (!users || !users.ids) {
           return done(new Error( 'User ID not provided'));
         }

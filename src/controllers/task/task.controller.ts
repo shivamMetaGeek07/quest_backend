@@ -100,7 +100,7 @@ export const taskController = {
 
     addTask: async ( req: Request, res: Response ): Promise<void> =>
     {
-        console.log( req.body );
+        // console.log( req.body );
         try
         {
             const questId = req.body.questId;
@@ -137,7 +137,7 @@ export const taskController = {
     {
         try
         {
-            console.log( req.body );
+            // console.log( req.body );
             const { taskId, userId } = req.body;
 
             const task = await TaskModel.findById( taskId );
@@ -166,7 +166,7 @@ export const taskController = {
 
             if ( alreadyCompleted )
             {
-                console.log( "message: Task already completed by this user" );
+                // console.log( "message: Task already completed by this user" );
                 res.status( 400 ).json( { message: "Task already completed by this user" } );
                 return;
             }
@@ -310,7 +310,7 @@ export const taskController = {
     referralGenerate: async ( req: Request, res: Response ): Promise<void> =>
     {
         const { userId, questId, taskId, expireDate } = req.body;
-        console.log( "first", req.body );
+        // console.log( "first", req.body );
         if ( !userId )
         {
             res.status( 500 ).json( { message: "User Not Found Please Login" } );
@@ -347,7 +347,7 @@ export const taskController = {
 
             await user.save();
 
-            console.log( referral );
+            // console.log( referral );
             res.status( 201 ).send( referral );
 
         } catch ( error )

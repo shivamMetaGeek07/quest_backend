@@ -8,7 +8,7 @@ export const questController = {
 
     // create a quest
   createQuest: async (req: Request, res: Response) => {
-    console.log("req form qust controlelr:0", req.body);
+    // console.log("req form qust controlelr:0", req.body);
     try {
         const { communityId, creator } = req.body;
 

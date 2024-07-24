@@ -92,10 +92,11 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
     const idToken=users.idToken;
     const num=users.number;
     const img=users.img;
-   const name=users.name;
+  const name = users.name;
+  console.log("id token",idToken)
     try {
       const decodedToken = await verifyPhoneNumberToken(idToken); 
-
+      console.log("decoded Token",decodedToken)
     if (!decodedToken) {
         return res.status(401).send('Authentication failed');
       }    // Generate JWT token 
@@ -116,10 +117,7 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
       phone_number: user.phone_number
     });
     console.log("user not",user)
-    // res.status(200).json({
-    //   message: 'User authenticated successfully',
-    //   token: jwtToken
-    // });
+    
     const options = {
       httpOnly: true,
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),

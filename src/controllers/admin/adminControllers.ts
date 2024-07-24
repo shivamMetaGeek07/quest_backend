@@ -30,13 +30,13 @@ export const login = async (req: Request, res: Response) => {
 
   try {
     const admin = await Admin.findOne({ email });
-    console.log("admin",admin);
+    // console.log("admin",admin);
     if (!admin) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
-    console.log("admin password",admin.password);
+    // console.log("admin password",admin.password);
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("hashpassword",hashedPassword);
+    // console.log("hashpassword",hashedPassword);
     const isMatch = await bcrypt.compare(password, admin.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid password' });
