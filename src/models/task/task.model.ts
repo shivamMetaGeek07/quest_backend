@@ -16,6 +16,16 @@ export interface ITaskBase extends Document {
 } 
 
 
+interface IQuiz {
+  question: string;
+  options: string[];
+  correctAnswer: string;
+}
+
+interface IPoll {
+  question: string;
+  options: string[];
+}
 
 // Combined type for all task types
 export type TaskOrPoll = ITaskBase & {
@@ -25,6 +35,8 @@ export type TaskOrPoll = ITaskBase & {
   discordLink?:string
   guild?:string;
   visitor?: mongoose.Types.ObjectId[];
+  quizzes?: IQuiz[];
+ polls?: IPoll[];
   question?: string;
   options?: string[];
   correctAnswer?: string;
@@ -33,7 +45,7 @@ export type TaskOrPoll = ITaskBase & {
   uploadLink?: string;
   response?: string | number;
   taskName?:string;
-  taskDescription?:string;
+  taskDescription?: string;
   
 
 };
@@ -61,10 +73,18 @@ const TaskSchema: Schema = new mongoose.Schema(
     discord:{type:String},
     guild:{type:String},
     discordLink:{type:String},
-    visitor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    question: { type: String },
-    options: [{ type: String }],
-    correctAnswer: { type: String },
+    visitor: [ { type: mongoose.Schema.Types.ObjectId, ref: 'User' } ],
+ 
+
+    quizzes: [{
+      question: { type: String },
+      options: [{ type: String }],
+      correctAnswer: { type: String }
+    }],
+    polls: [{
+      question: { type: String },
+      options: [{ type: String }]
+    }],
     inviteLink: { type: String },
     invitee: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     uploadLink: { type: String },
