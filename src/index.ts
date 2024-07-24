@@ -87,8 +87,10 @@ const verifyPhoneNumberToken = async (idToken:string) => {
     // Handle the error (e.g., return an unauthorized response)
   }
 };
+
 app.post('/api/verify-phone', async(req:Request, res:Response) => {
-     const users  = req.body;
+  const users = req.body;
+  console.log(req.body)
     const idToken=users.idToken;
     const num=users.number;
     const img=users.img;
@@ -123,17 +125,20 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
       secure: process.env.NODE_ENV === 'production',
       sameSite: "none" as "none"     // path: process.env.CLIENT_URL,
-      };
+      };
+      console.log("jwtToken:-",jwtToken, "Otiopns:-",options)
+      // alert("User Authuthenticaed")
     res.status(200).cookie("authToken", jwtToken, options).json({
       success: true,
       authToken:jwtToken,
       message:"user authenticated succesfully",
-    });
+    } );
 } catch (error) {
   console.error('Error during authentication:', error);
   res.status(401).send('Authentication failed');
 }
-});
+} );
+
 // Example route
 app.get('/', (req: Request, res: Response) => {
   

@@ -44,23 +44,37 @@ export const loginFailed = async (
 // Logout user
 
 
-export const logout = ( req: Request, res: Response ) =>
-{
-  req.logout( ( err ) =>
-  {
-    if ( err )
-    {
-      return res.status( 500 ).json( { message: 'Error logging out' } );
-    }
-    res.clearCookie( 'authToken' );
-    return res.status( 200 ).json( { message: 'Logged out successfully' } );
-  } );
-};
+// export const logout = ( req: Request, res: Response ) =>
+// {
+//   req.logout( ( err ) =>
+//   {
+//     if ( err )
+//     {
+//       return res.status( 500 ).json( { message: 'Error logging out' } );
+//     }
+//     res.clearCookie( 'authToken' );
+//     return res.status( 200 ).json( { message: 'Logged out successfully' } );
+//   } );
+// };
 // consumer_key: process.env.Twitter_Key!,
 //       consumer_secret: process.env.Twitter_Secret_key!,
 //       access_token_key: user.twitterInfo.oauthToken,
 //       access_token_secret: user.twitterInfo.oauthTokenSecret,
 // check in X is Account follw or not
+
+// logout
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect(publicClientUrl);
+  });
+};
 
 export const checkIfUserFollows = async ( req: Request, res: Response ) =>
 {
