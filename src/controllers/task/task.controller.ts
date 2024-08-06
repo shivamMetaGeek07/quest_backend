@@ -105,11 +105,8 @@ export const taskController = {
         {
             const questId = req.body.questId;
             const creator = req.body.creator;
-
             const userId = req.body.user;
-
             const new_task: TaskOrPoll = await TaskModel.create( req.body );
-
             const user = await UserDb.findById( userId );
             const quest = await QuestModel.findById( questId );
 
@@ -153,12 +150,14 @@ export const taskController = {
                 return;
             }
 
+
             const user = await UserDb.findById( userId );
             if ( !user )
             {
                 res.status( 404 ).json( { message: "User not found" } );
                 return;
             }
+
             // Check if the user has already completed this task
             const alreadyCompleted = task.completions?.some(
                 ( completion ) => completion.user.toString() === userId
@@ -178,6 +177,9 @@ export const taskController = {
             }
 
             task?.completions.push( { user: userId, completedAt: new Date(), submission: req.body.submission, userName: req.body.userName } );
+
+            user.rewards.xp += +(task?.rewards?.xp)
+            user.rewards.coins += +( task?.rewards.coins )
 
             if ( req?.body?.visitLink )
             {

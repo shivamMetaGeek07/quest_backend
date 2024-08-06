@@ -188,7 +188,7 @@ export const checkUserInChannel = async (channelId: string, userId: string) => {
       const members = await response.json();
       const isUserInChannel = members.some((member: any) => member.user.id === userId);
   
-      console.log(`Is user ${userId} in channel ${channelId}? ${isUserInChannel}`);
+      // console.log(`Is user ${userId} in channel ${channelId}? ${isUserInChannel}`);
       return isUserInChannel;
     } catch (error) {
       console.error('Error checking user in channel:', error);

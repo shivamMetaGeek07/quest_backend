@@ -165,7 +165,7 @@ passport.use(
         }
         
         // Process user data (fetch user guilds, update database, etc.)
-        console.log("User found:", user);
+        // console.log("User found:", user);
     
           const guilds = await fetchGuilds(accessToken);
           if (user) {

@@ -47,7 +47,11 @@ export type TaskOrPoll = ITaskBase & {
   taskName?:string;
   taskDescription?: string;
   uploadFileType?: string;
-  
+    rewards: {
+    xp: number;
+    coins: number;
+  };
+
 
 };
 
@@ -90,7 +94,10 @@ const TaskSchema: Schema = new mongoose.Schema(
     response: { type: String || Number },
     taskName:{type:String},
     taskDescription:{type:String},
-
+  rewards: {
+      xp: { type: Number, default: 0 },
+      coins: { type: Number, default: 0 },
+    },
     completions: [{
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       completedAt: { type: Date, default: Date.now },

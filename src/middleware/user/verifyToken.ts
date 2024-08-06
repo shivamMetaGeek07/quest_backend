@@ -12,10 +12,10 @@ const secretKey = process.env.JWT_SECRET as string;
 
 export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   const token=req.cookies.authToken;
-  console.log("df",token)
+  // console.log("df",token)
     const authHeader = req.headers['authorization'];
 
-    console.log(authHeader)
+    // console.log(authHeader)
     if (!authHeader) {
       return res.status(401).json({ error: 'No token provided' });
     }

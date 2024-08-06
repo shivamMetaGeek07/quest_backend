@@ -57,7 +57,7 @@ app.use(
 
   
   app.use((req, res, next) => {
-    console.log('authToken', req.cookies); // To debug cookie values
+    // console.log('authToken', req.cookies); // To debug cookie values
     next();
   });
 
@@ -90,15 +90,15 @@ const verifyPhoneNumberToken = async (idToken:string) => {
 
 app.post('/api/verify-phone', async(req:Request, res:Response) => {
   const users = req.body;
-  console.log(req.body)
+  // console.log(req.body)
     const idToken=users.idToken;
     const num=users.number;
     const img=users.img;
   const name = users.name;
-  console.log("id token",idToken)
+  // console.log("id token",idToken)
     try {
       const decodedToken = await verifyPhoneNumberToken(idToken); 
-      console.log("decoded Token",decodedToken)
+      // console.log("decoded Token",decodedToken)
     if (!decodedToken) {
         return res.status(401).send('Authentication failed');
       }    // Generate JWT token 
@@ -111,14 +111,14 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
       });
       
       await user.save();
-      console.log("created user",user)
+      // console.log("created user",user)
     }
     
     const jwtToken = generateToken({
       ids: user._id as string,
       phone_number: user.phone_number
     });
-    console.log("user not",user)
+    // console.log("user not",user)
     
     const options = {
       httpOnly: true,
@@ -126,7 +126,7 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
       secure: process.env.NODE_ENV === 'production',
       sameSite: "none" as "none"     // path: process.env.CLIENT_URL,
       };
-      console.log("jwtToken:-",jwtToken, "Otiopns:-",options)
+      // console.log("jwtToken:-",jwtToken, "Otiopns:-",options)
       // alert("User Authuthenticaed")
     res.status(200).cookie("authToken", jwtToken, options).json({
       success: true,
