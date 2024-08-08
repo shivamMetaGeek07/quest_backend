@@ -113,7 +113,7 @@ const userSchema: Schema = new mongoose.Schema(
     
     createdTasks: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Task' } ],
     createdQuests: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Quest' } ],
-    createdCommunities: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Community' }],
+    createdCommunities: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Community' } ],
   },
   { timestamps: true }
 );

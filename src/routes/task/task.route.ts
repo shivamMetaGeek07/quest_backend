@@ -32,6 +32,10 @@ taskRouter.get( "/kol/:id", taskController.getTaskByCreatorId );
 // create task
 taskRouter.post( "/", taskController.addTask );
 
+taskRouter.get('/',taskController.getAllTask)
+
+// connect the wallets
+taskRouter.post( "/connect-wallet", taskController.connectWallet );
 
 // complete task
 taskRouter.post( "/complete", taskController.completeTask );

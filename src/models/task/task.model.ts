@@ -51,8 +51,8 @@ export type TaskOrPoll = ITaskBase & {
     xp: number;
     coins: number;
   };
-
-
+  walletsToConnect?:number
+  connectedWallets?: string[];
 };
 
 const TaskSchema: Schema = new mongoose.Schema(
@@ -106,7 +106,9 @@ const TaskSchema: Schema = new mongoose.Schema(
     } ],
     uploadFileType: {
        type: String,
-     }
+     },
+    walletsToConnect: { type: Number, default: 0 },
+    connectedWallets: [ { type: String } ],
   },
   { timestamps: true }
 );

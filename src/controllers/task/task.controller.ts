@@ -130,6 +130,32 @@ export const taskController = {
         }
     },
 
+    connectWallet:async ( req: Request, res: Response ): Promise<void> =>    {
+        try
+        {
+            const { taskId,address } = req.body;
+            const task = await TaskModel.findById( taskId );
+            if ( !task )
+            {
+                res.status( 404 ).json( { message: "Task not found" } );
+                return;
+            }
+            // check if address is already present or not
+            if ( task?.connectedWallets?.includes( address )){
+                res.status( 400 ).json( {
+                    message: "Wallet is already connected to this task"
+                    } );
+              
+            } 
+                task?.connectedWallets?.push( address )
+                console.log("wallect connect succesfuly")
+            await task.save();
+        } catch (error) {
+            console.error( error );
+            res.status( 500 ).json( { message: "Error connect wallet", error } );
+        }
+    },
+
     completeTask: async ( req: Request, res: Response ): Promise<void> =>
     {
         try
@@ -138,6 +164,7 @@ export const taskController = {
             const { taskId, userId } = req.body;
 
             const task = await TaskModel.findById( taskId );
+            console.log('task at somplete take:-',task)
             if ( !task )
             {
                 res.status( 404 ).json( { message: "Task not found" } );
@@ -149,14 +176,18 @@ export const taskController = {
                 res.status( 201 ).json( { message: "YOU HAVE CREATED THIS TASK" } );
                 return;
             }
-
-
+            
             const user = await UserDb.findById( userId );
             if ( !user )
-            {
-                res.status( 404 ).json( { message: "User not found" } );
-                return;
-            }
+                {
+                    res.status( 404 ).json( { message: "User not found" } );
+                    return;
+                }
+                if ( task?.connectedWallets?.length && task.walletsToConnect && task?.connectedWallets?.length !== task.walletsToConnect )
+                {
+                    user.rewards.coins += 10;
+                    return
+                }
 
             // Check if the user has already completed this task
             const alreadyCompleted = task.completions?.some(
