@@ -166,7 +166,6 @@ export const checkInviteLink = async (inviteUrl: string) => {
       const inviteCode = extractInviteCode(inviteUrl);
       const inviteDetails = await fetchInviteDetails(inviteCode);
       const checkLink = await isBotInGuild(inviteDetails.guild_id);
-      console.log("first",checkLink)
       const guilData=inviteDetails.guild_id;
       return {checkLink,guilData};
     } catch (error) {
@@ -189,7 +188,7 @@ export const checkUserInChannel = async (channelId: string, userId: string) => {
       const members = await response.json();
       const isUserInChannel = members.some((member: any) => member.user.id === userId);
   
-      console.log(`Is user ${userId} in channel ${channelId}? ${isUserInChannel}`);
+      // console.log(`Is user ${userId} in channel ${channelId}? ${isUserInChannel}`);
       return isUserInChannel;
     } catch (error) {
       console.error('Error checking user in channel:', error);

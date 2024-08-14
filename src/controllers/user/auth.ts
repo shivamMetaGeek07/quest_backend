@@ -44,23 +44,37 @@ export const loginFailed = async (
 // Logout user
 
 
-export const logout = ( req: Request, res: Response ) =>
-{
-  req.logout( ( err ) =>
-  {
-    if ( err )
-    {
-      return res.status( 500 ).json( { message: 'Error logging out' } );
-    }
-    res.clearCookie( 'authToken' );
-    return res.status( 200 ).json( { message: 'Logged out successfully' } );
-  } );
-};
+// export const logout = ( req: Request, res: Response ) =>
+// {
+//   req.logout( ( err ) =>
+//   {
+//     if ( err )
+//     {
+//       return res.status( 500 ).json( { message: 'Error logging out' } );
+//     }
+//     res.clearCookie( 'authToken' );
+//     return res.status( 200 ).json( { message: 'Logged out successfully' } );
+//   } );
+// };
 // consumer_key: process.env.Twitter_Key!,
 //       consumer_secret: process.env.Twitter_Secret_key!,
 //       access_token_key: user.twitterInfo.oauthToken,
 //       access_token_secret: user.twitterInfo.oauthTokenSecret,
 // check in X is Account follw or not
+
+// logout
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect(publicClientUrl);
+  });
+};
 
 export const checkIfUserFollows = async ( req: Request, res: Response ) =>
 {
@@ -125,8 +139,8 @@ export const updateUser = async ( req: Request, res: Response ) =>
 {
   const user = req.user as any;
   const { bgImage, bio, nickname, image } = req.body;  // Extract the fields from the request body
-  console.log( "user", req.user );
-  console.log( "req.body", req.body );
+  // console.log( "user", req.user );
+  // console.log( "req.body", req.body );
   try
   {
 
@@ -144,7 +158,7 @@ export const updateUser = async ( req: Request, res: Response ) =>
       return res.status( 201 ).json( { success: false, message: "User not found. Please login" } );
 
     }
-    console.log( "data", data );
+    // console.log( "data", data );
 
     // Update user fields
     // user.bgImage = bgImage || user.bgImage;  // Update only if provided
@@ -167,7 +181,7 @@ export const checkExistingUser = async (req: Request, res: Response) => {
   try {
     // console.log(req.body);
     const user = await UserDb.findOne( { phone_number });
-    console.log(user);
+    // console.log(user);
     if (user) {
       return res.status(201).json({
         success: true, message: 'User already exists', existingUser: user

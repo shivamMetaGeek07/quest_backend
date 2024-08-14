@@ -57,7 +57,7 @@ app.use(
 
   
   app.use((req, res, next) => {
-    console.log('authToken', req.cookies); // To debug cookie values
+    // console.log('authToken', req.cookies); // To debug cookie values
     next();
   });
 
@@ -87,15 +87,18 @@ const verifyPhoneNumberToken = async (idToken:string) => {
     // Handle the error (e.g., return an unauthorized response)
   }
 };
+
 app.post('/api/verify-phone', async(req:Request, res:Response) => {
-     const users  = req.body;
+  const users = req.body;
+  // console.log(req.body)
     const idToken=users.idToken;
     const num=users.number;
     const img=users.img;
-   const name=users.name;
+  const name = users.name;
+  // console.log("id token",idToken)
     try {
       const decodedToken = await verifyPhoneNumberToken(idToken); 
-
+      // console.log("decoded Token",decodedToken)
     if (!decodedToken) {
         return res.status(401).send('Authentication failed');
       }    // Generate JWT token 
@@ -108,34 +111,34 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
       });
       
       await user.save();
-      console.log("created user",user)
+      // console.log("created user",user)
     }
     
     const jwtToken = generateToken({
       ids: user._id as string,
       phone_number: user.phone_number
     });
-    console.log("user not",user)
-    // res.status(200).json({
-    //   message: 'User authenticated successfully',
-    //   token: jwtToken
-    // });
+    // console.log("user not",user)
+    
     const options = {
       httpOnly: true,
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
       secure: process.env.NODE_ENV === 'production',
       sameSite: "none" as "none"     // path: process.env.CLIENT_URL,
-      };
+      };
+      // console.log("jwtToken:-",jwtToken, "Otiopns:-",options)
+      // alert("User Authuthenticaed")
     res.status(200).cookie("authToken", jwtToken, options).json({
       success: true,
       authToken:jwtToken,
       message:"user authenticated succesfully",
-    });
+    } );
 } catch (error) {
   console.error('Error during authentication:', error);
   res.status(401).send('Authentication failed');
 }
-});
+} );
+
 // Example route
 app.get('/', (req: Request, res: Response) => {
   

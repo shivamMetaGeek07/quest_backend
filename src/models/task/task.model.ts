@@ -46,8 +46,13 @@ export type TaskOrPoll = ITaskBase & {
   response?: string | number;
   taskName?:string;
   taskDescription?: string;
-  
-
+  uploadFileType?: string;
+    rewards: {
+    xp: number;
+    coins: number;
+  };
+  walletsToConnect?:number
+  connectedWallets?: string[];
 };
 
 const TaskSchema: Schema = new mongoose.Schema(
@@ -74,9 +79,7 @@ const TaskSchema: Schema = new mongoose.Schema(
     guild:{type:String},
     discordLink:{type:String},
     visitor: [ { type: mongoose.Schema.Types.ObjectId, ref: 'User' } ],
- 
-
-    quizzes: [{
+        quizzes: [{
       question: { type: String },
       options: [{ type: String }],
       correctAnswer: { type: String }
@@ -91,13 +94,21 @@ const TaskSchema: Schema = new mongoose.Schema(
     response: { type: String || Number },
     taskName:{type:String},
     taskDescription:{type:String},
-
+  rewards: {
+      xp: { type: Number, default: 0 },
+      coins: { type: Number, default: 0 },
+    },
     completions: [{
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       completedAt: { type: Date, default: Date.now },
       submission: { type: String },
       userName : {type : String}
-    }]
+    } ],
+    uploadFileType: {
+       type: String,
+     },
+    walletsToConnect: { type: Number, default: 0 },
+    connectedWallets: [ { type: String } ],
   },
   { timestamps: true }
 );

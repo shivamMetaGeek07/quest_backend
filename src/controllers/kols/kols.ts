@@ -12,7 +12,7 @@ import KolsDB from '../../models/kols/kols';
 export const createKols = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user =await req.body
-    console.log("Request Body:", user);
+    // console.log("Request Body:", user);
     // Check if `kolsData` exists in request body
     if (!req.body.kolsData) {
       return res.status(400).json({ error: "Bad Request", message: "No KolsData provided" });
@@ -50,7 +50,7 @@ export const createKols = async (req: Request, res: Response, next: NextFunction
     });
 
     await newKolsData.save();
-    console.log("KolsData saved:", newKolsData);
+    // console.log("KolsData saved:", newKolsData);
 
     // Respond with the newly created KolsData document
     return res.status(200).json({
@@ -69,7 +69,7 @@ export const getAllKol = async (req: Request, res: Response) => {
   try {
     // Fetch all KolsData documents from the database
     const kols = await KolsDB.find();
-    console.log("KolsData fetched:", kols);
+    // console.log("KolsData fetched:", kols);
     // Respond with the fetched data
     return res.status(200).json({
       success: true,

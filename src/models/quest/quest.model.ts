@@ -28,7 +28,9 @@ export interface Quest {
   rewards: Reward[];
   tasks?: string[];
   creator?: mongoose.Types.ObjectId;
-  community?: mongoose.Types.ObjectId
+  community?: mongoose.Types.ObjectId;
+  logo?: string;
+  categories?: string[];
 }
 
 const QuestSchema: Schema = new mongoose.Schema<Quest>({
@@ -50,6 +52,8 @@ const QuestSchema: Schema = new mongoose.Schema<Quest>({
   }] ,
   creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   community: { type: mongoose.Schema.Types.ObjectId, ref: 'Community' },
+  logo: { type: String },
+  categories: [],
 }, {
   timestamps: true
 }); 

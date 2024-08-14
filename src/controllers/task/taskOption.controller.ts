@@ -16,7 +16,7 @@ export const getTaskOptions = async (req: Request, res: Response) => {
 };
 
 export const createTaskOptions = async (req: Request, res: Response) => {
-  console.log("create task options",req.body);
+  // console.log("create task options",req.body);
     const {categories, taskOptions } = req.body;
     // console.log( req.body );
     try {
@@ -36,7 +36,7 @@ export const createTaskOptions = async (req: Request, res: Response) => {
 
 // Controller to update categories and taskOptions
 export const updateTaskOptions = async (req: Request, res: Response) => {
-  console.log("update taskOptions",req.body);
+  // console.log("update taskOptions",req.body);
   const { categories, taskOptions } = req.body;
 
   try {

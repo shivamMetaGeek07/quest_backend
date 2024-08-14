@@ -67,8 +67,14 @@ export interface IUser extends Document {
 // Create the User schema
 const userSchema: Schema = new mongoose.Schema(
   {
-    phone_number: { type: String, required: true,unique:true },
+    phone_number: { type: String,unique:true },
     googleId:{ type: String },
+    domain:{
+      domainAddress: { type: String,unique:true },
+      hashCode: { type: String},
+      walletAddress: { type: String },
+      password: { type: String },
+    },
     displayName: { type: String },
     email: { type: String },
     image: { type: String },
@@ -113,7 +119,7 @@ const userSchema: Schema = new mongoose.Schema(
     
     createdTasks: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Task' } ],
     createdQuests: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Quest' } ],
-    createdCommunities: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Community' }],
+    createdCommunities: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Community' } ],
   },
   { timestamps: true }
 );

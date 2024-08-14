@@ -7,21 +7,22 @@ export const CommunityController = {
     // create a community
     createCommunity: async ( req: Request, res: Response ): Promise<void> =>
     {
-         try
+        try
         {
             const creator = req.body.creator;
             const newCommunity: Community = await CommunityModel.create( req.body );
-            const creatorUser = await UserDb.findById( creator );       
+            const creatorUser = await UserDb.findById( creator );
             //  console.log(quest) 
-             
+
             if ( newCommunity )
             {
-                creatorUser?.createdCommunities?.push( newCommunity?._id);
+                creatorUser?.createdCommunities?.push( newCommunity?._id );
                 await creatorUser?.save();
-            res.status( 201 ).json( { newCommunity: newCommunity, msg: "Community Created Successfully" } );
-            }else{
+                res.status( 201 ).json( { newCommunity: newCommunity, msg: "Community Created Successfully" } );
+            } else
+            {
                 res.status( 400 ).json( { message: "Error in creating the quest" } );
-             }
+            }
         } catch ( error )
         {
             res.status( 400 ).json( { message: 'Failed to create the Community', error } );
@@ -30,16 +31,16 @@ export const CommunityController = {
     // get all communities
     getAllCommunities: async ( req: Request, res: Response ): Promise<void> =>
     {
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || Infinity;
-        const skip = (page - 1) * limit;
+        const page = parseInt( req.query.page as string ) || 1;
+        const limit = parseInt( req.query.limit as string ) || Infinity;
+        const skip = ( page - 1 ) * limit;
         try
         {
-            const communities: Community[] = await CommunityModel.find().skip(skip).limit(limit);
+            const communities: Community[] = await CommunityModel.find().skip( skip ).limit( limit );
             const totalCommunities = await CommunityModel.countDocuments();
-            const totalPages = Math.ceil(totalCommunities / limit);
+            const totalPages = Math.ceil( totalCommunities / limit );
             res.status( 200 ).json( {
-                communities: communities,totalPages,
+                communities: communities, totalPages,
                 msg: "Fetched Communities successfully"
             } );
         } catch ( error )
@@ -48,49 +49,72 @@ export const CommunityController = {
         }
     },
     getallFilter: async ( req: Request, res: Response ): Promise<void> =>
+    {
+        try
         {
-            try
-            {
-                const communities: Community[] = await CommunityModel.find();
-                res.status( 200 ).json( {
-                    communities: communities,
-                    msg: "Fetched Communities successfully"
-                } );
-            } catch ( error )
-            {
-                res.status( 400 ).json( { message: 'failed to fetch the communities', error } );
-            }
-        },
-    
-    getFilterCommunity: async (req: Request, res: Response): Promise<void> => {
-        try {
-            
+            const communities: Community[] = await CommunityModel.find();
+            res.status( 200 ).json( {
+                communities: communities,
+                msg: "Fetched Communities successfully"
+            } );
+        } catch ( error )
+        {
+            res.status( 400 ).json( { message: 'failed to fetch the communities', error } );
+        }
+    },
+
+    getFilterCommunity: async ( req: Request, res: Response ): Promise<void> =>
+    {
+        try
+        {
             const { search, ecosystem, category } = req.body;
+            const page = Math.max( 1, parseInt( req.query.page as string ) || 1 );
+            const limit = Math.max( 1, Math.min( 100, parseInt( req.query.limit as string ) || 10 ) );
+            const skip = ( page - 1 ) * limit;
 
             // Construct query object based on provided filters
             const query: any = {};
-        
-            if (search && search.trim()) {
+
+            if ( search && search.trim() )
+            {
                 query.title = { $regex: search, $options: 'i' }; // Case-insensitive search
             }
-        
-            if (ecosystem && ecosystem.length > 0 && ecosystem[0].trim()) {
-                query.ecosystem = { $in: Array.isArray(ecosystem) ? ecosystem : [ecosystem] };
+
+            if ( ecosystem && ecosystem.length > 0 && ecosystem[ 0 ].trim() )
+            {
+                query.ecosystem = { $in: Array.isArray( ecosystem ) ? ecosystem : [ ecosystem ] };
             }
-        
-            if (category && category.length > 0 && category[0].trim()) {
-                query.category = { $in: Array.isArray(category) ? category : [category] };
+
+            if ( category && category.length > 0 && category[ 0 ].trim() )
+            {
+                query.category = { $in: Array.isArray( category ) ? category : [ category ] };
             }
-        
-            const communities: Community[] = await CommunityModel.find(query);
-            res.status(200).json(communities);
-            } catch (error) {
-            res.status(400).json({
-            message: 'Failed to fetch communities',
-            error,
-            });
+
+            const [ communities, totalCommunities ] = await Promise.all( [
+                CommunityModel.find( query ).skip( skip ).limit( limit ),
+                CommunityModel.countDocuments( query )
+            ] );
+
+            const totalPages = Math.ceil( totalCommunities / limit );
+
+            res.status( 200 ).json( {
+                communities: communities,
+                pagination: {
+                    currentPage: page,
+                    totalPages,
+                    totalItems: totalCommunities,
+                    itemsPerPage: limit,
+                },
+                msg: "Fetched Communities successfully"
+            } );
+        } catch ( error )
+        {
+            res.status( 400 ).json( {
+                message: 'Failed to fetch communities',
+                error,
+            } );
         }
-        },
+    },
     // Get a specific community by ID
     getCommunityById: async ( req: Request, res: Response ): Promise<void> =>
     {
@@ -109,29 +133,33 @@ export const CommunityController = {
 
     // complete community detail of several ids (bulk)
 
-    getCommunitiesByIds: async (req: Request, res: Response): Promise<void> => {
-    try {
-        const communityIds = req.body.communityIds;
-        
-        if (!Array.isArray(communityIds)) {
-            res.status(400).json({ message: 'Invalid input: communityIds must be an array' });
-            return;
-        }
+    getCommunitiesByIds: async ( req: Request, res: Response ): Promise<void> =>
+    {
+        try
+        {
+            const communityIds = req.body.communityIds;
 
-        const communities = await CommunityModel.find({ _id: { $in: communityIds } });
-        
-        res.status(200).json({
-            message: "Communities fetched successfully",
-            communities
-        });
-    } catch (error) {
-        console.error('Error in getCommunitiesByIds:', error);
-        res.status(500).json({
-            message: 'Internal server error while fetching communities'
-        });
-    }
-},
-    
+            if ( !Array.isArray( communityIds ) )
+            {
+                res.status( 400 ).json( { message: 'Invalid input: communityIds must be an array' } );
+                return;
+            }
+
+            const communities = await CommunityModel.find( { _id: { $in: communityIds } } );
+
+            res.status( 200 ).json( {
+                message: "Communities fetched successfully",
+                communities
+            } );
+        } catch ( error )
+        {
+            console.error( 'Error in getCommunitiesByIds:', error );
+            res.status( 500 ).json( {
+                message: 'Internal server error while fetching communities'
+            } );
+        }
+    },
+
     // update a community
     updateCommunity: async ( req: Request, res: Response ): Promise<void> =>
     {
@@ -140,7 +168,7 @@ export const CommunityController = {
             const community: Community | null = await CommunityModel.findByIdAndUpdate( req.params.id, req.body,
                 { new: true } );
             res.status( 200 ).json( community );
-            
+
         } catch ( error )
         {
             res.status( 400 ).json( {
@@ -148,14 +176,14 @@ export const CommunityController = {
             } );
         }
     },
-    
+
     // delete the community
     deleteCommunity: async ( req: Request, res: Response ): Promise<void> =>
     {
         try
         {
             const communityId = req.params.communityId;
-            const community = await CommunityModel.findByIdAndDelete( communityId )
+            const community = await CommunityModel.findByIdAndDelete( communityId );
             if ( !community ) res.status( 404 ).json( { message: 'Community not found' } );
             else res.status( 200 ).json( { message: 'Community deleted successfully' } );
         } catch ( error )
@@ -172,16 +200,16 @@ export const CommunityController = {
     {
         try
         {
-            let communities: Community[] = []
+            let communities: Community[] = [];
             if ( req.params.ecosystem )
             {
-                 communities = await CommunityModel.find( {
+                communities = await CommunityModel.find( {
                     ecosystem: req.params.ecosystem
                 } );
-                
+
             } else
             {
-                 communities = await CommunityModel.find();
+                communities = await CommunityModel.find();
             }
             res.status( 200 ).json( communities );
         } catch ( error )
@@ -198,7 +226,7 @@ export const CommunityController = {
     {
         try
         {
-            let communities: Community[] = []
+            let communities: Community[] = [];
             if ( req.params.category )
             {
                 communities = await CommunityModel.find( {
@@ -224,14 +252,14 @@ export const CommunityController = {
         {
             const communityId = req.params.id;
             const memberId = req.body.memberId;
-            console.log("firsdsdst",memberId,communityId)
+            // console.log( "firsdsdst", memberId, communityId );
             if ( !communityId || !memberId )
             {
                 res.status( 400 ).json( { message: 'Invalid community ID or member ID' } );
                 return;
             }
             const community = await CommunityModel.findById( communityId );
-           
+
             if ( memberId == community?.creator )
             {
                 res.status( 400 ).json( {
@@ -253,23 +281,24 @@ export const CommunityController = {
                 return;
             }
 
-           // Update the user's communities array
-        const updatedUser = await UserDb.findByIdAndUpdate(
-            memberId,
-            { $addToSet: { community: communityId } },
-            { new: true, runValidators: true }
-        );
+            // Update the user's communities array
+            const updatedUser = await UserDb.findByIdAndUpdate(
+                memberId,
+                { $addToSet: { community: communityId } },
+                { new: true, runValidators: true }
+            );
 
-        if (!updatedUser) {
-            res.status(404).json({ message: 'User not found' });
-            return;
-        }
+            if ( !updatedUser )
+            {
+                res.status( 404 ).json( { message: 'User not found' } );
+                return;
+            }
 
-        res.status(200).json({
-            message: "Member added to community successfully",
-            updatedCommunity,
-            updatedUser
-        });
+            res.status( 200 ).json( {
+                message: "Member added to community successfully",
+                updatedCommunity,
+                updatedUser
+            } );
 
         } catch ( error )
         {
@@ -281,67 +310,73 @@ export const CommunityController = {
     },
 
     // member leave the community
-    leaveCommunity: async (req: Request, res: Response): Promise<void> => {
-    try {
-        const communityId = req.params.id;
-        const memberId = req.body.memberId;
+    leaveCommunity: async ( req: Request, res: Response ): Promise<void> =>
+    {
+        try
+        {
+            const communityId = req.params.id;
+            const memberId = req.body.memberId;
 
-        if (!communityId || !memberId) {
-            res.status(400).json({ message: 'Invalid community ID or member ID' });
-            return;
+            if ( !communityId || !memberId )
+            {
+                res.status( 400 ).json( { message: 'Invalid community ID or member ID' } );
+                return;
+            }
+
+            // Remove member from community
+            const updatedCommunity = await CommunityModel.findOneAndUpdate(
+                { _id: communityId, members: memberId },
+                { $pull: { members: memberId } },
+                { new: true, runValidators: true }
+            );
+
+            if ( !updatedCommunity )
+            {
+                res.status( 404 ).json( { message: 'Community not found or member not in community' } );
+                return;
+            }
+
+            // Remove community from user's communities array
+            const updatedUser = await UserDb.findByIdAndUpdate(
+                memberId,
+                { $pull: { communities: communityId } },
+                { new: true, runValidators: true }
+            );
+
+            if ( !updatedUser )
+            {
+                res.status( 404 ).json( { message: 'User not found' } );
+                return;
+            }
+
+            res.status( 200 ).json( {
+                message: 'Member removed successfully from community and community removed from user',
+                updatedCommunity,
+                updatedUser
+            } );
+        } catch ( error )
+        {
+            console.error( 'Error in leaveCommunity:', error );
+            res.status( 500 ).json( {
+                message: 'Internal server error while leaving community'
+            } );
         }
-
-        // Remove member from community
-        const updatedCommunity = await CommunityModel.findOneAndUpdate(
-            { _id: communityId, members: memberId },
-            { $pull: { members: memberId } },
-            { new: true, runValidators: true }
-        );
-
-        if (!updatedCommunity) {
-            res.status(404).json({ message: 'Community not found or member not in community' });
-            return;
-        }
-
-        // Remove community from user's communities array
-        const updatedUser = await UserDb.findByIdAndUpdate(
-            memberId,
-            { $pull: { communities: communityId } },
-            { new: true, runValidators: true }
-        );
-
-        if (!updatedUser) {
-            res.status(404).json({ message: 'User not found' });
-            return;
-        }
-
-        res.status(200).json({ 
-            message: 'Member removed successfully from community and community removed from user', 
-            updatedCommunity,
-            updatedUser
-        });
-    } catch (error) {
-        console.error('Error in leaveCommunity:', error);
-        res.status(500).json({ 
-            message: 'Internal server error while leaving community'
-        });
-    }
     },
-    
-   
 
-    
 
-             
 
-    
+
+
+
+
+
 }
- 
 
-           
-       
-   
 
-    
 
-    
+
+
+
+
+
+

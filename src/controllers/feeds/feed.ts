@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import Feed from '../../models/feed/feed';
 
 export const addFeed = async (req: Request, res: Response) => {
-    console.log(req.body);
+    // console.log(req.body);
     const { title, author, imageUrl, summary,description } = req.body;
     try {
         if (!title || !description || !imageUrl) {
@@ -55,7 +55,7 @@ export const getFeedById = async (req: Request, res: Response) => {
 };
 export const deleteFeed = async ( req: Request, res: Response ) =>
 {
-    console.log(req);
+    // console.log(req);
     const { id } = req.params;
     try
     {
@@ -77,7 +77,7 @@ export const deleteFeed = async ( req: Request, res: Response ) =>
 
 export const updateFeed = async ( req: Request, res: Response ) =>
 {
-    console.log(req);
+    // console.log(req);
     const { id } = req.params;
     const { title, description, imageUrl, author, summary } = req.body;
     try

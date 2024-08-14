@@ -100,16 +100,13 @@ export const taskController = {
 
     addTask: async ( req: Request, res: Response ): Promise<void> =>
     {
-        console.log( req.body );
+        // console.log( req.body );
         try
         {
             const questId = req.body.questId;
             const creator = req.body.creator;
-
             const userId = req.body.user;
-
             const new_task: TaskOrPoll = await TaskModel.create( req.body );
-
             const user = await UserDb.findById( userId );
             const quest = await QuestModel.findById( questId );
 
@@ -133,14 +130,41 @@ export const taskController = {
         }
     },
 
+    connectWallet:async ( req: Request, res: Response ): Promise<void> =>    {
+        try
+        {
+            const { taskId,address } = req.body;
+            const task = await TaskModel.findById( taskId );
+            if ( !task )
+            {
+                res.status( 404 ).json( { message: "Task not found" } );
+                return;
+            }
+            // check if address is already present or not
+            if ( task?.connectedWallets?.includes( address )){
+                res.status( 400 ).json( {
+                    message: "Wallet is already connected to this task"
+                    } );
+              
+            } 
+                task?.connectedWallets?.push( address )
+                console.log("wallect connect succesfuly")
+            await task.save();
+        } catch (error) {
+            console.error( error );
+            res.status( 500 ).json( { message: "Error connect wallet", error } );
+        }
+    },
+
     completeTask: async ( req: Request, res: Response ): Promise<void> =>
     {
         try
         {
-            console.log( req.body );
+            // console.log( req.body );
             const { taskId, userId } = req.body;
 
             const task = await TaskModel.findById( taskId );
+            console.log('task at somplete take:-',task)
             if ( !task )
             {
                 res.status( 404 ).json( { message: "Task not found" } );
@@ -152,13 +176,19 @@ export const taskController = {
                 res.status( 201 ).json( { message: "YOU HAVE CREATED THIS TASK" } );
                 return;
             }
-
+            
             const user = await UserDb.findById( userId );
             if ( !user )
-            {
-                res.status( 404 ).json( { message: "User not found" } );
-                return;
-            }
+                {
+                    res.status( 404 ).json( { message: "User not found" } );
+                    return;
+                }
+                if ( task?.connectedWallets?.length && task.walletsToConnect && task?.connectedWallets?.length !== task.walletsToConnect )
+                {
+                    user.rewards.coins += 10;
+                    return
+                }
+
             // Check if the user has already completed this task
             const alreadyCompleted = task.completions?.some(
                 ( completion ) => completion.user.toString() === userId
@@ -166,7 +196,7 @@ export const taskController = {
 
             if ( alreadyCompleted )
             {
-                console.log( "message: Task already completed by this user" );
+                // console.log( "message: Task already completed by this user" );
                 res.status( 400 ).json( { message: "Task already completed by this user" } );
                 return;
             }
@@ -178,6 +208,9 @@ export const taskController = {
             }
 
             task?.completions.push( { user: userId, completedAt: new Date(), submission: req.body.submission, userName: req.body.userName } );
+
+            user.rewards.xp += +(task?.rewards?.xp)
+            user.rewards.coins += +( task?.rewards.coins )
 
             if ( req?.body?.visitLink )
             {
@@ -310,7 +343,7 @@ export const taskController = {
     referralGenerate: async ( req: Request, res: Response ): Promise<void> =>
     {
         const { userId, questId, taskId, expireDate } = req.body;
-        console.log( "first", req.body );
+        // console.log( "first", req.body );
         if ( !userId )
         {
             res.status( 500 ).json( { message: "User Not Found Please Login" } );
@@ -347,7 +380,7 @@ export const taskController = {
 
             await user.save();
 
-            console.log( referral );
+            // console.log( referral );
             res.status( 201 ).send( referral );
 
         } catch ( error )

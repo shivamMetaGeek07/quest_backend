@@ -8,15 +8,15 @@ export const questController = {
 
     // create a quest
   createQuest: async (req: Request, res: Response) => {
-    console.log("req form qust controlelr:0", req.body);
+    // console.log("req form qust controlelr:0", req.body);
     try {
-        const { communityId, creator } = req.body;
+        const { community, creator } = req.body;
 
         // Create a new quest
         const newQuest: Quest = await QuestModel.create(req.body);
 
         // Verify if the community exists
-        const currentCommunity = await CommunityModel.findById( communityId );
+        const currentCommunity = await CommunityModel.findById( community );
         const creatorUser = await UserDb.findById( creator );
         if (!currentCommunity) {
             res.status(400).json({ message: "Community not found" });

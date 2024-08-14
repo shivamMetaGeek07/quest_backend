@@ -1,9 +1,42 @@
 import { Request, Response } from "express";
+import bcrypt from "bcryptjs";
 import User from "../../models/user/user";
-import { CommandInteractionOptionResolver } from "discord.js";
-import UserDb from "../../models/user/user";
 
-const getUserById = async (req: Request, res: Response) => {
+export const createUserByDomain = async (req: Request, res: Response) => {
+  try {
+    const { domainAddress, password, hashCode, walletAddress } = req.body;
+
+    if (!domainAddress || !hashCode || !walletAddress || !password) {
+      return res.status(400).json({ message: 'Domain address and password are required' });
+    }
+
+    const existingUser = await User.findOne({ 'domain.domainAddress': domainAddress });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Domain address already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      domain: {
+        domainAddress,
+        hashCode,
+        walletAddress,
+        password: hashedPassword,
+      },
+    });
+
+    // Save the user to the database
+    await newUser.save();
+
+    // Respond with success message
+    return res.status(200).json({ message: 'User created successfully', user: newUser });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const getUserById = async (req: Request, res: Response) => {
 
   const userId = req.params.id;
   try {
@@ -17,7 +50,7 @@ const getUserById = async (req: Request, res: Response) => {
   } 
 };
 
-const getFriendsByIds = async ( req: Request, res: Response ): Promise<void> =>
+export const getFriendsByIds = async ( req: Request, res: Response ): Promise<void> =>
 {
   try
   {
@@ -43,7 +76,7 @@ const getFriendsByIds = async ( req: Request, res: Response ): Promise<void> =>
   }
 }
 
-const followUser = async (req: Request, res: Response) => {
+export const followUser = async (req: Request, res: Response) => {
   const { userId, followId } = req.body;
   try {
     const user = await User.findById(userId);
@@ -71,7 +104,7 @@ const followUser = async (req: Request, res: Response) => {
   
 };
 
-const unfollowUser = async (req: Request, res: Response) => {
+export const unfollowUser = async (req: Request, res: Response) => {
   const { userId, unfollowId } = req.body;
   // console.log(userId, unfollowId);
   try {
@@ -99,7 +132,7 @@ const unfollowUser = async (req: Request, res: Response) => {
   }
 };
 
-const getAllUser = async ( req: Request, res: Response ) =>
+export const getAllUser = async ( req: Request, res: Response ) =>
 {
   try {
     const users: any = await User.find();
@@ -112,4 +145,3 @@ const getAllUser = async ( req: Request, res: Response ) =>
   }
 }
 
-export { getUserById, followUser, unfollowUser,getAllUser, getFriendsByIds };
