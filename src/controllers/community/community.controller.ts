@@ -145,7 +145,7 @@ export const CommunityController = {
                 return;
             }
 
-            const communities = await CommunityModel.find( { _id: { $in: communityIds } } );
+            const communities = await CommunityModel.find( { _id: { $in: communityIds } } ).sort( { createdAt: -1 } );
 
             res.status( 200 ).json( {
                 message: "Communities fetched successfully",
