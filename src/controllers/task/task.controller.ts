@@ -144,9 +144,11 @@ export const taskController = {
             if ( task?.connectedWallets?.includes( address )){
                 res.status( 400 ).json( {
                     message: "Wallet is already connected to this task"
-                    } );
-              
+                } );
+                return;
             } 
+            console.log("address:-",address);
+            
                 task?.connectedWallets?.push( address )
                 console.log("wallect connect succesfuly")
             await task.save();
