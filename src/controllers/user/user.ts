@@ -4,7 +4,7 @@ import User from "../../models/user/user";
 
 export const createUserByDomain = async (req: Request, res: Response) => {
   try {
-    const { domainAddress, password, hashCode, walletAddress } = req.body;
+    const { domainAddress, password, hashCode, walletAddress,image } = req.body;
 
     if (!domainAddress || !hashCode || !walletAddress || !password) {
       return res.status(400).json({ message: 'Domain address and password are required' });
@@ -19,6 +19,7 @@ export const createUserByDomain = async (req: Request, res: Response) => {
     const newUser = new User({
       domain: {
         domainAddress,
+        image,
         hashCode,
         walletAddress,
         password: hashedPassword,

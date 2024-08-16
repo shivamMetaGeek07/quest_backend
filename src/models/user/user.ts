@@ -71,6 +71,7 @@ const userSchema: Schema = new mongoose.Schema(
     googleId:{ type: String },
     domain:{
       domainAddress: { type: String,unique:true },
+      image:{type:String},
       hashCode: { type: String},
       walletAddress: { type: String },
       password: { type: String },
