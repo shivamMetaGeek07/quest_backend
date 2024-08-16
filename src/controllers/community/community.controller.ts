@@ -91,7 +91,7 @@ export const CommunityController = {
             }
 
             const [ communities, totalCommunities ] = await Promise.all( [
-                CommunityModel.find( query ).skip( skip ).limit( limit ),
+                CommunityModel.find( query ).sort({ createdAt: -1 }).skip( skip ).limit( limit ),
                 CommunityModel.countDocuments( query )
             ] );
 
