@@ -130,10 +130,11 @@ export const taskController = {
         }
     },
 
-    connectWallet:async ( req: Request, res: Response ): Promise<void> =>    {
+    connectWallet: async ( req: Request, res: Response ): Promise<void> =>
+    {
         try
         {
-            const { taskId,address } = req.body;
+            const { taskId, address } = req.body;
             const task = await TaskModel.findById( taskId );
             if ( !task )
             {
@@ -141,19 +142,21 @@ export const taskController = {
                 return;
             }
             // check if address is already present or not
-            if ( task?.connectedWallets?.includes( address )){
+            if ( task?.connectedWallets?.includes( address ) )
+            {
                 res.status( 400 ).json( {
                     message: "Wallet is already connected to this task"
                 } );
                 return;
-            } 
-            console.log("address:-",address);
-            
-                task?.connectedWallets?.push( address )
-                console.log("wallect connect succesfuly")
+            }
+            console.log( "address:-", address );
+
+            task?.connectedWallets?.push( address );
+            console.log( "wallect connect succesfuly" );
             await task.save();
-             res.status( 200 ).json( { msg: "Wallet connected successfully", task } );
-        } catch (error) {
+            res.status( 200 ).json( { msg: "Wallet connected successfully", task } );
+        } catch ( error )
+        {
             console.error( error );
             res.status( 500 ).json( { message: "Error connect wallet", error } );
         }
@@ -167,7 +170,7 @@ export const taskController = {
             const { taskId, userId } = req.body;
 
             const task = await TaskModel.findById( taskId );
-            console.log('task at somplete take:-',task)
+            console.log( 'task at somplete take:-', task );
             if ( !task )
             {
                 res.status( 404 ).json( { message: "Task not found" } );
@@ -179,18 +182,18 @@ export const taskController = {
                 res.status( 201 ).json( { message: "YOU HAVE CREATED THIS TASK" } );
                 return;
             }
-            
+
             const user = await UserDb.findById( userId );
             if ( !user )
-                {
-                    res.status( 404 ).json( { message: "User not found" } );
-                    return;
-                }
-                if ( task?.connectedWallets?.length && task.walletsToConnect && task?.connectedWallets?.length !== task.walletsToConnect )
-                {
-                    user.rewards.coins += 10;
-                    return
-                }
+            {
+                res.status( 404 ).json( { message: "User not found" } );
+                return;
+            }
+            if ( task?.connectedWallets?.length && task.walletsToConnect && task?.connectedWallets?.length !== task.walletsToConnect )
+            {
+                user.rewards.coins += 10;
+                return;
+            }
 
             // Check if the user has already completed this task
             const alreadyCompleted = task.completions?.some(
@@ -212,8 +215,8 @@ export const taskController = {
 
             task?.completions.push( { user: userId, completedAt: new Date(), submission: req.body.submission, userName: req.body.userName } );
 
-            user.rewards.xp += +(task?.rewards?.xp)
-            user.rewards.coins += +( task?.rewards.coins )
+            user.rewards.xp += +( task?.rewards?.xp );
+            user.rewards.coins += +( task?.rewards.coins );
 
             if ( req?.body?.visitLink )
             {
@@ -232,6 +235,9 @@ export const taskController = {
                 user.completedTasks = [];
             }
             user.completedTasks.push( taskId );
+
+
+              
             await user.save();
 
             res.status( 200 ).json( { message: "Task completed successfully" } );
@@ -242,73 +248,84 @@ export const taskController = {
         }
     },
 
+
+
     // rewards claim
-   claimReward: async (req: Request, res: Response): Promise<any> => {
-    try {
-        const { userId, questId } = req.body;
-
-        const quest: Quest | null = await QuestModel.findById(questId);
-        const user: IUser | null = await UserDb.findById(userId);
-
-        if (!quest || !user) {
-            return res.status(404).json({
-                message: "Quest or user not found"
-            });
-        }
-
-        // Check if the reward has already been claimed by the user
-        if (user.quest.includes(questId)) {
-            return res.status(200).json({
-                message: "Reward already claimed"
-            });
-        }
-
-        // Update user's rewards
-        quest.rewards.forEach(reward => {
-            if (reward.type === 'xp') {
-                user.rewards.xp += reward.value;
-            } else if (reward.type === 'coin') {
-                user.rewards.coins += reward.value;
-            }
-        });
-
-        // Add questId to user's quests
-        user.quest.push(questId);
-
-        // Fetch and sort badges
-        const badges = await Badge.find();
-        const sortedBadges = badges.sort((a, b) => b.level - a.level);
-
-        // Check for new badge
-        for ( const badge of sortedBadges )
+    claimReward: async ( req: Request, res: Response ): Promise<any> =>
+    {
+        try
         {
-            // console.log( badge.level, badge.questCriteria, badge.taskCriteria )
-       
-            if (user.quest.length >= badge.questCriteria && user.completedTasks.length >= badge.taskCriteria) {
-                user.badges?.push( badge )
-                user.level = badge.level.toString();
-                // console.log("caleed")
-                break; // Exit after assigning the highest achieved badge
+            const { userId, questId } = req.body;
+
+            const quest: Quest | null = await QuestModel.findById( questId );
+            const user: IUser | null = await UserDb.findById( userId );
+
+            if ( !quest || !user )
+            {
+                return res.status( 404 ).json( {
+                    message: "Quest or user not found"
+                } );
             }
+
+            // Check if the reward has already been claimed by the user
+            if ( user.quest.includes( questId ) )
+            {
+                return res.status( 200 ).json( {
+                    message: "Reward already claimed"
+                } );
+            }
+
+            // Update user's rewards
+            quest.rewards.forEach( reward =>
+            {
+                if ( reward.type === 'xp' )
+                {
+                    user.rewards.xp += reward.value;
+                } else if ( reward.type === 'coin' )
+                {
+                    user.rewards.coins += reward.value;
+                }
+            } );
+
+            // Add questId to user's quests
+            user.quest.push( questId );
+
+            // Fetch and sort badges
+            const badges = await Badge.find();
+            const sortedBadges = badges.sort( ( a, b ) => b.level - a.level );
+
+            // Check for new badge
+            for ( const badge of sortedBadges )
+            {
+                // console.log( badge.level, badge.questCriteria, badge.taskCriteria )
+
+                if ( user.quest.length >= badge.questCriteria && user.completedTasks.length >= badge.taskCriteria )
+                {
+                    user.badges?.push( badge );
+                    user.level = badge.level.toString();
+                    // console.log("caleed")
+                    break; // Exit after assigning the highest achieved badge
+                }
+            }
+
+            // console.log("user :-", user)
+            // Save the updated user
+            await user.save();
+
+            const response: any = {
+                message: "Reward claimed successfully",
+                updatedRewards: user.rewards
+            };
+
+
+            res.status( 200 ).json( response );
+
+        } catch ( error )
+        {
+            console.error( error );
+            res.status( 500 ).json( { message: "Error claiming reward", error } );
         }
-
-        // console.log("user :-", user)
-        // Save the updated user
-        await user.save();
-
-        const response: any = {
-            message: "Reward claimed successfully",
-            updatedRewards: user.rewards
-        };
-       
-
-        res.status(200).json(response);
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error claiming reward", error });
-    }
-},
+    },
 
     // delete the task
     deleteTask: async ( req: Request, res: Response ): Promise<void> =>
