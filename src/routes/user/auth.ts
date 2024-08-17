@@ -250,13 +250,8 @@ authrouter.get("/login/failed", loginFailed);
 authrouter.get("/profile",verifyToken, async (req, res) => {
   const user = req.user as any;
    let data;
-  if (!user) {
-    return res.status(201).json({success:false, message: "User not found. Please login" });
-
-  }
-
-  data = await UserDb.findById(user.ids);
-   
+  if (!user) { return res.status(201).json({success:false, message: "User not found. Please login" });  } 
+  data = await UserDb.findById(user.ids); 
   return res.status(200).send(data);
 });
 
