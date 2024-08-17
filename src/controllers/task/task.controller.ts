@@ -152,6 +152,7 @@ export const taskController = {
                 task?.connectedWallets?.push( address )
                 console.log("wallect connect succesfuly")
             await task.save();
+             res.status( 200 ).json( { msg: "Wallet connected successfully", task } );
         } catch (error) {
             console.error( error );
             res.status( 500 ).json( { message: "Error connect wallet", error } );
