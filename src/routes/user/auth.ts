@@ -193,7 +193,7 @@ authrouter.get(
 authrouter.get('/telegram/callback', verifyToken, async (req, res) => {
   try {
     // Extract query parameters from the request
-    const { id, first_name, last_name, username, photo_url } = req.query as { 
+    const { id, first_name, last_name, username, photo_url } = req.params as { 
       id?: string;
       first_name?: string;
       last_name?: string;
