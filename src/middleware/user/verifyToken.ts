@@ -11,6 +11,7 @@ export interface jwtUser{
 const secretKey = process.env.JWT_SECRET as string;
 
 export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+  console.log("verifying token",req);
   const token = req.cookies.authToken || req.headers.authorization?.split(' ')[1];
   
   if (!token) {
