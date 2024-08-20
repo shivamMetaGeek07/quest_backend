@@ -38,24 +38,12 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
 export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
     console.log("req",req);
     const token=req.cookies.authToken;
-    const authHeader = req.headers['authorization'];
-
-    // console.log(authHeader)
-    if (!authHeader) {
+  
+    if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }
-  // const  {authToken:token}=req.cookies;
-  
-  // console.log("token",token)
-    // const token = authHeader.split(' ')[1]; // This removes the "Bearer " prefix
-  
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-
-    const data= jwt.verify(token, secretKey)
-
-    // If token is valid, store the decoded information in req.user  
+    const data= jwt.verify(token, secretKey);
+    
     req.user = data;
     next();
 };
