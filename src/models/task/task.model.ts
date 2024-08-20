@@ -1,4 +1,5 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
+import { type } from 'os';
 
 // Base interface for all task types
 export interface ITaskBase extends Document {
@@ -53,6 +54,7 @@ export type TaskOrPoll = ITaskBase & {
   };
   walletsToConnect?:number
   connectedWallets?: string[];
+  opinionQuestion?: string;
 };
 
 const TaskSchema: Schema = new mongoose.Schema(
@@ -98,6 +100,7 @@ const TaskSchema: Schema = new mongoose.Schema(
       xp: { type: Number, default: 0 },
       coins: { type: Number, default: 0 },
     },
+  opinionQuestion: {type:String},
     completions: [{
       user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       completedAt: { type: Date, default: Date.now },
@@ -109,6 +112,7 @@ const TaskSchema: Schema = new mongoose.Schema(
      },
     walletsToConnect: { type: Number, default: 0 },
     connectedWallets: [ { type: String } ],
+
   },
   { timestamps: true }
 );
