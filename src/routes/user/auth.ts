@@ -259,6 +259,7 @@ authrouter.get("/profile",verifyToken, async (req, res) => {
 
 authrouter.put("/profile/update",verifyToken, updateUser );
 
+
 // logout client
 authrouter.get("/logout",verifyToken , logout);
 
