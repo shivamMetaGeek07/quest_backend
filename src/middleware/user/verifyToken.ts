@@ -11,6 +11,7 @@ export interface jwtUser{
 const secretKey = process.env.JWT_SECRET as string;
 
 export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+  
   console.log("req",req);
   const token=req.cookies.authToken;
   // console.log("df",token)
