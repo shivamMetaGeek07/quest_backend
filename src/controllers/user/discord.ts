@@ -24,18 +24,7 @@ client.on('error', (error) => {
   console.error('Discord client error:', error);
 });
 
-// client.on('guildMemberAdd', async (member) => {
-//   // Fetch the welcome channel from the guild
-//   const channel = member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
-
-//   // Check if the channel exists and is a text channel
-//   if (channel && channel.isTextBased()) {
-//     // Send a welcome message to the channel
-//     (channel as TextChannel).send(`Hi ${member.user.tag}, welcome to ${member.guild.name}!`);
-//   } else {
-//     console.error('Welcome channel not found or is not a text channel');
-//   }
-// });
+ 
 
 client.on('shardError', (error) => {
   console.error('WebSocket connection error:', error);
@@ -122,13 +111,15 @@ export const checkGuilds = async (token: string): Promise<string[]> => {
     }
   };
 
+  
+
 export const sendNotification = async (channelId: string, message: string) => {
     try {
       const channel = await client.channels.fetch(channelId) as TextChannel;
       if (!channel || !channel.isTextBased()) {
         throw new Error('Channel not found or is not a text channel');
       }
-        await channel.send(message);
+        await channel.send(`New Community ${message} added .Please visit everyone`);
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;

@@ -316,17 +316,17 @@ authrouter.get('/check-guilds', async (req: Request, res: Response) => {
 
 // send Message to  User after joining the channel  (DISORD)
 
-authrouter.post('/message/channel', async (req: Request, res: Response) => {
-  if (!req.user) {
-    return res.status(401).send('User is not authenticated');
-  }
+authrouter.post('/message/channel',verifyToken, async (req: Request, res: Response) => {
 
-  const users = req.user as IUser;
-  if (!users.discordInfo || !users.discordInfo.accessToken) {
-    return res.status(200).send('User does not have a Discord access token');
-  }
-  const {channelId, message}=req.body;
+
+  // const users = req.user as IUser;
+  // if (!users.discordInfo || !users.discordInfo.accessToken) {
+  //   return res.status(200).send('User does not have a Discord access token');
+  // }
+
+  const { message}=req.body;
   try {
+    const channelId='1275405988257595484'
     const sendMesg = await sendNotification(channelId,message);
 
     res.status(200).json({ success: true, sendMesg });

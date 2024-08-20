@@ -182,12 +182,14 @@ export const CommunityController = {
     {
         try
         {
-            const communityId = req.params.communityId;
+            console.log(req.params)
+            const communityId = req.params.id;
+            console.log("community",communityId)
             const community = await CommunityModel.findByIdAndDelete( communityId );
             if ( !community ) res.status( 404 ).json( { message: 'Community not found' } );
             else res.status( 200 ).json( { message: 'Community deleted successfully' } );
         } catch ( error )
-        {
+        { 
             console.error( 'Error in deleteCommunity:', error );
             res.status( 500 ).json( {
                 message: 'Internal server error while deleting community'
