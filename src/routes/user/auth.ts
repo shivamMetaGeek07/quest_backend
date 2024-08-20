@@ -11,7 +11,7 @@ import KolsDB from "../../models/kols/kols";
 import crypto from 'crypto';
 import { checkTelegramId } from "../../middleware/user/telegram";
 import { ensureAuthenticated } from "../../middleware/user/discordAuthentication";
-import { jwtUser, verifyToken } from "../../middleware/user/verifyToken";
+import { jwtUser, verifyToken, verifyUser } from "../../middleware/user/verifyToken";
 import axios from "axios";
 import oauth from 'oauth';
 import jwt from 'jsonwebtoken';
@@ -189,7 +189,7 @@ authrouter.get(
      }) 
 );
  
-authrouter.get('/telegram/callback', verifyToken, async (req, res) => {
+authrouter.get('/telegram/callback', verifyUser, async (req, res) => {
   
   try {
     // Extract query parameters from the request
