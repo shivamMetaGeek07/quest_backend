@@ -26,7 +26,7 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
     // const token = authHeader.split(' ')[1]; // This removes the "Bearer " prefix
   
 
-    const data= jwt.verify(token, secretKey)
+    const data= jwt.verify(token, secretKey);
 
     // If token is valid, store the decoded information in req.user  
     req.user = data;
