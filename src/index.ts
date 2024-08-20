@@ -20,6 +20,9 @@ import cookieParser from "cookie-parser"
 import {auth} from "./utils/fireAdmin"
 import UserDb, { generateToken } from "./models/user/user";
 import grantRouter from "./routes/grants/grant";
+import TelegramBot from './controllers/telegram/telegramBot';
+import telegramRouter from "./controllers/telegram/telegram";
+
 dotenv.config();
 const app: Express = express();
 app.use( express.json() );
@@ -139,6 +142,8 @@ app.post('/api/verify-phone', async(req:Request, res:Response) => {
 }
 } );
 
+TelegramBot;
+app.use('/telegram',telegramRouter);
 // Example route
 app.get('/', (req: Request, res: Response) => {
   
