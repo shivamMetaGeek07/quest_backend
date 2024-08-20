@@ -63,17 +63,9 @@ export const loginFailed = async (
 // check in X is Account follw or not
 
 // logout
-export const logout = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  req.logout(function (err) {
-    if (err) {
-      return next(err);
-    }
-    res.redirect(publicClientUrl);
-  });
+export const logout = async (req: Request, res: Response) => {
+  res.clearCookie('authToken');
+  res.status(200).json({ message: 'Logged out successfully' });
 };
 
 export const checkIfUserFollows = async ( req: Request, res: Response ) =>
