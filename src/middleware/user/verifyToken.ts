@@ -11,12 +11,13 @@ export interface jwtUser{
 const secretKey = process.env.JWT_SECRET as string;
 
 export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+  console.log("req",req);
   const token=req.cookies.authToken;
   // console.log("df",token)
     const authHeader = req.headers['authorization'];
 
     // console.log(authHeader)
-    if (!authHeader) {
+    if (!authHeader && !token) {
       return res.status(401).json({ error: 'No token provided' });
     }
   // const  {authToken:token}=req.cookies;
@@ -24,9 +25,6 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
   // console.log("token",token)
     // const token = authHeader.split(' ')[1]; // This removes the "Bearer " prefix
   
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
 
     const data= jwt.verify(token, secretKey)
 
@@ -43,7 +41,7 @@ export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
       return res.status(401).json({ error: 'No token provided' });
     }
     const data= jwt.verify(token, secretKey);
-    
+
     req.user = data;
     next();
 };
