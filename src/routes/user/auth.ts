@@ -189,8 +189,8 @@ authrouter.get(
      }) 
 );
  
-
 authrouter.get('/telegram/callback', verifyToken, async (req, res) => {
+  
   try {
     // Extract query parameters from the request
     const { id, first_name, last_name, username, photo_url } = req.params as { 
@@ -200,11 +200,13 @@ authrouter.get('/telegram/callback', verifyToken, async (req, res) => {
       username?: string;
       photo_url?: string;
     };
+    console.log("first",id,first_name,last_name,username,photo_url);
+
 
     // Optional user verification
     const users = req.user as jwtUser;
     const userId = users.ids;
-
+    console.log("second",userId);
     // Check if user exists in the database
     let userdata = await UserDb.findById(userId);
     // console.log("first",userdata)
@@ -225,8 +227,8 @@ authrouter.get('/telegram/callback', verifyToken, async (req, res) => {
     await userdata.save();
 
 
-    // res.status(200).send({ message: "Telegram connected successfully" });
-   return res.redirect(`${process.env.PUBLIC_CLIENT_URL}/user/profile`);
+    return res.status(200).send({ message: "Telegram connected successfully" });
+  //  return res.redirect(`${process.env.PUBLIC_CLIENT_URL}/user/profile`);
   } catch (error) {
     console.error("Error during authentication:", error);
     return res.status(500).send({ message: "Try again later" });
