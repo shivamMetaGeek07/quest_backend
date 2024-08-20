@@ -11,27 +11,19 @@ export interface jwtUser{
 const secretKey = process.env.JWT_SECRET as string;
 
 export const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.cookies.authToken || req.headers.authorization?.split(' ')[1];
   
-  console.log("req",req);
-  const token=req.cookies.authToken;
-  // console.log("df",token)
-    const authHeader = req.headers['authorization'];
-
-    // console.log(authHeader)
-    if (!authHeader && !token) {
-      return res.status(401).json({ error: 'No token provided' });
-    }
-  // const  {authToken:token}=req.cookies;
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
   
-  // console.log("token",token)
-    // const token = authHeader.split(' ')[1]; // This removes the "Bearer " prefix
-  
-
-    const data= jwt.verify(token, secretKey);
-
-    // If token is valid, store the decoded information in req.user  
-    req.user = data;
+  try {
+    const decoded = jwt.verify(token, secretKey) as jwtUser;
+    req.user = decoded;
     next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
 };
 
 export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
