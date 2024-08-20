@@ -25,16 +25,3 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
     return res.status(401).json({ error: 'Invalid token' });
   }
 };
-
-export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
-    console.log("req",req);
-    const token=req.cookies.authToken;
-  
-    if (!token) {
-      return res.status(401).json({ error: 'No token provided' });
-    }
-    const data= jwt.verify(token, secretKey);
-
-    req.user = data;
-    next();
-};
