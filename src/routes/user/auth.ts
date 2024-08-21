@@ -4,7 +4,7 @@ import passport from "../../utils/passport";
 import { checkExistingUser, checkIfUserFollows, loginFailed, loginSuccess, logout, updateUser } from "../../controllers/user/auth";
 import { isAuthenticated } from "../../middleware/user/authorize.user";
 import { TwitterConnected } from "../../middleware/user/twitter";
-import { checkGuilds, checkInviteLink, fetchGuildChannelInfo, sendNotification } from "../../controllers/user/discord";
+import { checkGuilds, checkInviteLink, fetchGuildChannelInfo, sendDiscord } from "../../controllers/user/discord";
 import UserDb, { IUser } from "../../models/user/user";
 import { DiscordConnected } from "../../middleware/user/discord";
 import KolsDB from "../../models/kols/kols";
@@ -22,7 +22,7 @@ interface Guild {
 dotenv.config();
 
 const authrouter = express.Router();
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
+const TELEGRAM_BOT_TOKEN = process.env.TELE_BOT_TOKEN!;
 const SECRET_KEYS = crypto.createHash('sha256').update(TELEGRAM_BOT_TOKEN).digest();
 // Google route 
 
@@ -308,28 +308,6 @@ authrouter.get('/check-guilds', async (req: Request, res: Response) => {
     const guilds = await checkGuilds( accessToken);
 
     return res.status(200).send(guilds);
-  } catch (error) {
-    console.error('Error fetching guilds:', error);
-    return res.status(500).send('Failed to fetch guilds');
-  }
-});
-
-// send Message to  User after joining the channel  (DISORD)
-
-authrouter.post('/message/channel',verifyToken, async (req: Request, res: Response) => {
-
-
-  // const users = req.user as IUser;
-  // if (!users.discordInfo || !users.discordInfo.accessToken) {
-  //   return res.status(200).send('User does not have a Discord access token');
-  // }
-
-  const { message}=req.body;
-  try {
-    const channelId='1275405988257595484'
-    const sendMesg = await sendNotification(channelId,message);
-
-    res.status(200).json({ success: true, sendMesg });
   } catch (error) {
     console.error('Error fetching guilds:', error);
     return res.status(500).send('Failed to fetch guilds');

@@ -20,8 +20,7 @@ import cookieParser from "cookie-parser"
 import {auth} from "./utils/fireAdmin"
 import UserDb, { generateToken } from "./models/user/user";
 import grantRouter from "./routes/grants/grant";
-// import TelegramBot from './controllers/telegram/telegramBot';
-import telegramRouter from "./controllers/telegram/telegram";
+import telegramRouter from "./routes/telegram/telegram";
 
 dotenv.config();
 const app: Express = express();

@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import CommunityModel, { Community } from '../../models/community/community.model';
 import UserDb from '../../models/user/user';
+import { sendMessage } from '../../controllers/telegram/telegram';
+import { sendDiscord } from '../user/discord';
 
 export const CommunityController = {
 
@@ -17,11 +19,23 @@ export const CommunityController = {
             if ( newCommunity )
             {
                 creatorUser?.createdCommunities?.push( newCommunity?._id );
-                await creatorUser?.save();
-                res.status( 201 ).json( { newCommunity: newCommunity, msg: "Community Created Successfully" } );
+                const savedUser = await creatorUser?.save();
+                if( savedUser ){
+                    const chat_id=process.env.FAMPROTOCOL_TELE_GROUP__ID as string;
+                    const discord_chat_id=process.env.FAMPROTOCOL_dISCORD_ID as string;
+
+                    const messageText=`🎉 New Community Created! 🎉\n\n` +
+                    `🌟 ${newCommunity?.title}\n\n` +
+                    `👥 ${newCommunity?.description}\n\n\n`+
+                    ` join the Community!\n\n` ;
+
+                    await sendMessage(chat_id, messageText);
+                    await sendDiscord( discord_chat_id, messageText );
+                }
+                res.status( 200 ).json( { newCommunity: newCommunity, msg: "Community Created Successfully" } );
             } else
             {
-                res.status( 400 ).json( { message: "Error in creating the quest" } );
+                res.status( 400 ).json( { message: "Error in creating the Community" } );
             }
         } catch ( error )
         {
